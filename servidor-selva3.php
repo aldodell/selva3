@@ -584,5 +584,377 @@ switch ($verb) {
 
 
 
+    //Carga los evaluados para competencias por cargo
+    case "CARGAR_EVALUADOS_POR_OBJETIVOS":
+        $sql = "SELECT asignaciones.idEvaluado as value, expediente.NOMBRES_APELLIDOS as label
+                FROM asignaciones INNER JOIN expediente
+                ON asignaciones.idEvaluado = expediente.CEDULA
+                WHERE
+                asignaciones.idPeriodo = ?
+                AND
+                asignaciones.idEvaluador = ?
+                AND
+                asignaciones.idTipoEvaluacion = 5;";
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->bindValue(2, $payload->idEvaluador);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
+
+    case "CARGAR_EVALUACIONES_POR_OBJETIVOS":
+        $sql = "SELECT * FROM evaluacionesPorObjetivos WHERE idEvaluador = ? AND idEvaluado = ? AND idPeriodo = ?";
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idEvaluador);
+        $statement->bindValue(2, $payload->idEvaluado);
+        $statement->bindValue(3, $payload->idPeriodo);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
+
+    case "GUARDAR_ITEM_EVALUACION_POR_OBJETIVOS":
+
+        try {
+
+            $sql = "SELECT count(*) FROM evaluacionesPorObjetivos WHERE idEvaluador = ? AND idEvaluado = ? AND idPeriodo = ?";
+            $statement = $database->prepare($sql);
+            $statement->bindValue(1, $payload->idEvaluador);
+            $statement->bindValue(2, $payload->idEvaluado);
+            $statement->bindValue(3, $payload->idPeriodo);
+            $statement->execute();
+            $result = $statement->fetch(PDO::FETCH_BOTH);
+
+            if ($result[0] == 0) {
+                $sql = "INSERT INTO evaluacionesPorObjetivos ( idEvaluador, idEvaluado, idPeriodo, fechaHora) VALUES (?,?,?,?)";
+                $statement = $database->prepare($sql);
+                $statement->bindValue(1, $payload->idEvaluador);
+                $statement->bindValue(2, $payload->idEvaluado);
+                $statement->bindValue(3, $payload->idPeriodo);
+                $statement->bindValue(4, $payload->fechaHora);
+                $statement->execute();
+            }
+
+            $sql = "UPDATE evaluacionesPorObjetivos SET  objetivo1=?, objetivo2=?, objetivo3=?, objetivo4=?, ponderacion1=?, ponderacion2=?, ponderacion3=?, ponderacion4=?, calificacion1=?, calificacion2=?, calificacion3=?, calificacion4=?, fechaHora=? WHERE idEvaluador = ? AND idEvaluado = ? AND idPeriodo = ?";
+            $statement = $database->prepare($sql);
+            $statement->bindValue(1, $payload->objetivo1);
+            $statement->bindValue(2, $payload->objetivo2);
+            $statement->bindValue(3, $payload->objetivo3);
+            $statement->bindValue(4, $payload->objetivo4);
+            $statement->bindValue(5, $payload->ponderacion1);
+            $statement->bindValue(6, $payload->ponderacion2);
+            $statement->bindValue(7, $payload->ponderacion3);
+            $statement->bindValue(8, $payload->ponderacion4);
+            $statement->bindValue(9, $payload->calificacion1);
+            $statement->bindValue(10, $payload->calificacion2);
+            $statement->bindValue(11, $payload->calificacion3);
+            $statement->bindValue(12, $payload->calificacion4);
+            $statement->bindValue(13, $payload->fechaHora);
+            $statement->bindValue(14, $payload->idEvaluador);
+            $statement->bindValue(15, $payload->idEvaluado);
+            $statement->bindValue(16, $payload->idPeriodo);
+            $statement->execute();
+            echo "OK";
+
+
+
+        } catch (Exception $e) {
+            print_r($e);
+        }
+
+        break;
+
+
+    case "CARGAR_EVALUADOS_360_ASIGNADOS_A_UN_EVALUADOR":
+        try {
+
+
+
+            $sql = "SELECT asignaciones.idEvaluado as value, expediente.NOMBRES_APELLIDOS as label
+                FROM asignaciones INNER JOIN expediente
+                ON asignaciones.idEvaluado = expediente.CEDULA
+                WHERE
+                asignaciones.idPeriodo = ?
+                AND
+                asignaciones.idEvaluador = ?
+                AND
+                asignaciones.idTipoEvaluacion = 1";
+            $statement = $database->prepare($sql);
+            $statement->bindValue(1, $payload->idPeriodo);
+            $statement->bindValue(2, $payload->idEvaluador);
+            $statement->execute();
+            $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+
+
+            echo json_encode($result);
+        } catch (Exception $e) {
+            echo "Error: $e";
+        }
+        break;
+
+    case "CARGAR_EVALUACION_360_DE_UN_EVALUADO":
+        try {
+
+            $paquete = new stdClass();
+
+
+            //Cargar auto evaluaciones
+            $sql = "SELECT 
+            comp.competencia, CEIL((25 * avg(ev.calificacion))) as c
+                FROM
+                competencias360 comp INNER JOIN evaluaciones360 ev on comp.id = ev.idItem
+                WHERE
+                ev.idEvaluado = ?
+                AND
+                ev.idEvaluador = ?
+                AND
+                ev.idPeriodo = ?                      
+                GROUP BY
+                comp.COMPETENCIA
+                ORDER BY comp.COMPETENCIA
+                ";
+            $statement = $database->prepare($sql);
+            $statement->bindValue(1, $payload->idEvaluado);
+            $statement->bindValue(2, $payload->idEvaluado);
+            $statement->bindValue(3, $payload->idPeriodo);
+            $statement->execute();
+            $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+
+            //Cargar la evaluacion que le hace el jefe
+            $sql = "SELECT 
+                comp.competencia,  CEIL((25 * avg(ev.calificacion))) as c
+                FROM
+                competencias360 comp
+                INNER JOIN
+                evaluaciones360 ev on comp.id = ev.idItem
+                INNER JOIN
+                expediente ex on ex.CEDULA = ev.idEvaluado
+                WHERE
+                ev.idEvaluado = ?
+                AND
+                ev.idEvaluador = ex.CEDULA_LIDER
+                AND
+                ev.idPeriodo = ?                      
+                GROUP BY
+                comp.COMPETENCIA
+                ORDER BY comp.COMPETENCIA
+                ";
+            $statement = $database->prepare($sql);
+            $statement->bindValue(1, $payload->idEvaluado);
+            $statement->bindValue(2, $payload->idPeriodo);
+            $statement->execute();
+            $result2 = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            //cargar la evaluacion que hacen los subordinados
+            $sql = "SELECT 
+                comp.competencia,  CEIL((25 * avg(ev.calificacion))) as c
+                FROM
+                competencias360 comp
+                INNER JOIN
+                evaluaciones360 ev on comp.id = ev.idItem
+                INNER JOIN
+                expediente ex on ex.CEDULA_LIDER = ev.idEvaluado
+                WHERE
+                ev.idEvaluado = ?
+                AND
+                ev.idEvaluador = ex.CEDULA
+                AND
+                ev.idPeriodo = ?                      
+                GROUP BY
+                comp.COMPETENCIA
+                ORDER BY comp.COMPETENCIA
+                ";
+
+
+            $statement = $database->prepare($sql);
+            $statement->bindValue(1, $payload->idEvaluado);
+            $statement->bindValue(2, $payload->idPeriodo);
+            $statement->execute();
+            $result3 = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            //Cargamos los pares
+            $sql = "SELECT 
+                comp.competencia,  CEIL((25 * avg(ev.calificacion))) as c
+                FROM
+                competencias360 comp
+                INNER JOIN
+                evaluaciones360 ev on comp.id = ev.idItem
+                INNER JOIN
+                expediente ex1 on ex1.CEDULA = ev.idEvaluado
+                 INNER JOIN
+                expediente ex2 on ex2.CEDULA = ev.idEvaluador
+                
+                WHERE
+                ev.idEvaluado = ?
+                AND
+                ev.idEvaluador <> ev.idEvaluado -- no es autoevaluacion
+                AND
+                ex1.CEDULA_LIDER <> ex2.CEDULA -- no es jefe
+                AND
+                ex2.CEDULA_LIDER <> ex1.CEDULA -- no es subordinado
+                AND
+                ev.idPeriodo = ?                      
+                GROUP BY
+                comp.COMPETENCIA
+                ORDER BY comp.COMPETENCIA
+                ";
+
+            $statement = $database->prepare($sql);
+            $statement->bindValue(1, $payload->idEvaluado);
+            $statement->bindValue(2, $payload->idPeriodo);
+            $statement->execute();
+            $result4 = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            //Tomar solo las competencias
+            $sql = "SELECT distinct competencia FROM competencias360 order by competencia";
+            $statement = $database->prepare($sql);
+            $statement->execute();
+            $result5 = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+
+            $paquete->autoevaluacion = $result;
+            $paquete->jefe = $result2;
+            $paquete->colaboradores = $result3;
+            $paquete->pares = $result4;
+            $paquete->competencias = $result5;
+
+
+            echo json_encode($paquete);
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+        break;
+
+
+    case "CALCULAR_PROMEDIO_360_NACIONAL":
+        $sql =
+            "SELECT ex1.COMPANIA, round(25*avg(ev.calificacion)) as promedio
+                from 
+
+                evaluaciones360 ev 
+                INNER JOIN
+                expediente ex1 on ev.idEvaluado = ex1.CEDULA
+                INNER JOIN
+                expediente ex2 on ev.idEvaluador = ex2.CEDULA
+                WHERE
+                ev.idPeriodo = ?
+                AND
+                ev.calificacion>0
+
+                GROUP BY
+                ex1.COMPANIA;
+            ";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
+
+
+    case "CARGAR_EVALUACIONES_360_POR_COMPANIAS_Y_EVALUADORES":
+
+        $sql = "SELECT COMPANIA, 4*AVG(t.autoevalucion), 4*AVG(t.jefe), 4*AVG(t.colaboradores), 4*AVG(t.pares) 
+            FROM
+            (SELECT ex1.COMPANIA as COMPANIA, round(25*avg(ev.calificacion)) as autoevalucion, 0 as jefe, 0 as colaboradores, 0 as pares
+            from 
+
+            evaluaciones360 ev 
+            INNER JOIN
+            expediente ex1 on ev.idEvaluado = ex1.CEDULA
+            INNER JOIN
+            expediente ex2 on ev.idEvaluador = ex2.CEDULA
+            WHERE
+            ev.idPeriodo = ?
+            AND
+            ev.calificacion>0
+            AND
+            ex1.CEDULA = ex2.CEDULA
+
+            GROUP BY
+            ex1.COMPANIA
+
+            UNION
+
+            SELECT ex1.COMPANIA as COMPANIA, 0 as autoevalucion, round(25*avg(ev.calificacion)) as jefe, 0 as colaboradores, 0 as pares
+            from 
+
+            evaluaciones360 ev 
+            INNER JOIN
+            expediente ex1 on ev.idEvaluado = ex1.CEDULA
+            INNER JOIN
+            expediente ex2 on ev.idEvaluador = ex2.CEDULA
+            WHERE
+            ev.idPeriodo = ?
+            AND
+            ev.calificacion>0
+            AND
+            ex1.CEDULA_LIDER = ex2.CEDULA
+
+            GROUP BY
+            ex1.COMPANIA
+
+            UNION
+
+            SELECT ex1.COMPANIA as COMPANIA,  0 as autoevalucion , 0 as jefe , round(25*avg(ev.calificacion)) as colaboradores ,0 as pares
+            from 
+
+            evaluaciones360 ev 
+            INNER JOIN
+            expediente ex1 on ev.idEvaluado = ex1.CEDULA
+            INNER JOIN
+            expediente ex2 on ev.idEvaluador = ex2.CEDULA
+            WHERE
+            ev.idPeriodo = ?
+            AND
+            ev.calificacion>0
+            AND
+            ex1.CEDULA = ex2.CEDULA_LIDER
+
+            GROUP BY
+            ex1.COMPANIA
+
+            UNION
+
+
+            SELECT ex1.COMPANIA as COMPANIA,  0 as autoevalucion, 0 as jefe, 0 as colaboradores, round(25*avg(ev.calificacion)) as pares
+
+            from 
+
+            evaluaciones360 ev 
+            INNER JOIN
+            expediente ex1 on ev.idEvaluado = ex1.CEDULA
+            INNER JOIN
+            expediente ex2 on ev.idEvaluador = ex2.CEDULA
+            WHERE
+            ev.idPeriodo = ?
+            AND
+            ev.calificacion>0
+            AND
+            ex1.CEDULA <> ex2.CEDULA_LIDER -- no es subordinado
+            AND
+            ex1.CEDULA_LIDER <> ex2.CEDULA -- no es el jefe
+            AND
+            ex1.CEDULA <> ex2.CEDULA -- no es auto
+
+            GROUP BY
+            ex1.COMPANIA
+            ) as t;
+
+            ";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->bindValue(2, $payload->idPeriodo);
+        $statement->bindValue(3, $payload->idPeriodo);
+        $statement->bindValue(4, $payload->idPeriodo);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
 
 }

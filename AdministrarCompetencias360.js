@@ -71,8 +71,8 @@ class AdministrarCompetencias360 extends SelvaApplication {
                             })
                             .getMe((me) => me.indexCompetencia = indexCompetencia)
                             .addCssText("vertical-align: top; font-size:1.5em; margin-left: 8px;margin-bottom: 8px;")
-                    ).setToolTip(
-                        KToolTip("Guardar Competencia")
+                    ).setTitle(
+                        "Guardar Competencia"
                     )
 
                 )
@@ -112,8 +112,8 @@ class AdministrarCompetencias360 extends SelvaApplication {
                                 .addCssText("vertical-align: top; font-size:1.5em; margin-left: 8px;")
                         )
                             .addCssText("display:inline-block; vertical-align: top;")
-                            .setToolTip(
-                                KToolTip("Guardar Comportamiento")
+                            .setTitle(
+                                "Guardar Comportamiento"
                             )
 
                     ).addCssText("display:inline-block; vertical-align: top;")
@@ -130,8 +130,8 @@ class AdministrarCompetencias360 extends SelvaApplication {
                         .addCssText("margin-left: 50px; font-size:1.5em;")
                 )
                     .addCssText("width: fit-content;margin-bottom:100px;")
-                    .setToolTip(
-                        KToolTip("Nuevo comportamiento")
+                    .setTitle(
+                        "Nuevo comportamiento"
                     )
 
             )

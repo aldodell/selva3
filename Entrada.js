@@ -14,7 +14,7 @@ class Entrada extends SelvaApplication {
                 if (!data) {
                     alert("Usuario o contraseña incorrectos");
                 } else {
-                  
+
                     let user = KUser(data.EMAIL, data);
 
                     SelvaApplication.user = user;
@@ -29,6 +29,9 @@ class Entrada extends SelvaApplication {
 
 
     getInitScreen() {
+
+        if (this.initScreen) return this.initScreen;
+
         let initScreen = super.getInitScreen();
 
         initScreen.add(
@@ -59,7 +62,6 @@ class Entrada extends SelvaApplication {
     loadData() {
         this.navigationController.navigateTo(this.getInitScreen());
 
-    
         let user = localStorage.getItem("user");
         if (user) {
             user = JSON.parse(user);
@@ -67,6 +69,7 @@ class Entrada extends SelvaApplication {
             this.blockData.setData(user.payload);
         }
     }
+
 
     constructor() {
         super("entrada",

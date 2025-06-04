@@ -59,7 +59,5 @@ class SelvaApplication extends KApplicationClass {
             SelvaApplication.user = KUser(u.name, u.payload);
         }
     }
-    /*
-     constructor(description = "App", order = 0, group = "Apps", show = true, icon = "terminal.png", payload = {}) {
-   */
+   
 }

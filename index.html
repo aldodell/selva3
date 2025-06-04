@@ -27,10 +27,23 @@
             "Evaluacion360.js",
             "EvaluacionCompetenciaPorCargo.js",
             "EvaluacionHabilidadesTecnicas.js",
+            "EvaluacionPorObjetivos.js",
+            "ReporteSelva.js",
+            "Reporte360Personal.js",
+            "Reporte360Companias.js",
 
         ).then(() => {
             KLauncher.pathIcons = "../Kicsy2/media/icons/";
             KLauncher.update();
+
+
+            if (localStorage.getItem("user") == null) {
+                KMessage("launcher", {}, "close").send();
+                KMessage("entrada", {}, "run").send();
+            }
+
+
+
         });
 
     </script>
