@@ -20,6 +20,18 @@ class ReporteSelva extends SelvaApplication {
 
     }
 
+    getColorByValue(value) {
+        if (value < 85) {
+            return "background-color: red;"
+        } else if (value >= 85 && value < 95) {
+            return "background-color: coral;"
+        } else if (value >= 95 && value < 100) {
+            return "background-color: green;"
+        } else {
+            return "background-color: gold;"
+        }
+    }
+
     getReport() {
 
         //Singleton pattern
@@ -59,8 +71,7 @@ class ReporteSelva extends SelvaApplication {
         return this.report;
     }
 
-    loadData() {
-
+    loadData(callback) {
         KMessage("", "", "CARGAR_PERIODOS")
             .send(this.server)
             .then((data) => {
@@ -68,10 +79,10 @@ class ReporteSelva extends SelvaApplication {
                 this.selectorPeriodo.clear();
                 this.periodos.addOptions(JSON.parse(data));
                 this.selectorPeriodo.importDataList(this.periodos);
+                if (callback) {
+                    callback();
+                }
             });
-
-
-
     }
 
     run() {

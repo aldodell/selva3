@@ -78,16 +78,8 @@ class Reporte360Personal extends ReporteSelva {
                         .addBar(0, "pares", "Pares", "background-color: coral")
                         .addBar(0, "colaboradores", "Colab.", "background-color: pink;")
                         .setConfigureBarByValue((bar, value) => {
-                            if (value < 85) {
-                                bar.addCssText("background-color: red;")
-                            } else if (value >= 85 && value < 95) {
-                                bar.addCssText("background-color: coral;")
-                            } else if (value >= 95 && value < 100) {
-                                bar.addCssText("background-color: green;")
-                            } else {
-                                bar.addCssText("background-color: gold;")
-                            }
-
+                            let css = this.getColorByValue(value);
+                            bar.addCssText(css);
                         })
                     ,
 
