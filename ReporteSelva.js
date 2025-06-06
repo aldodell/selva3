@@ -6,13 +6,11 @@ class ReporteSelva extends SelvaApplication {
     titulo2 = this.titulo1 + "font-size: 1.0em;";
     titulo2s = this.titulo2 + "text-decoration: underline;";
 
-
     navigationController = KNavigationController;
     report;
 
     periodos = KDataList();
     selectorPeriodo = KSelect(this.periodos, "idPeriodo")
-
 
     tituloPrincipal = "Ejemplo de reporte"
 

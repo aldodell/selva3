@@ -1,10 +1,13 @@
 class Reporte360Companias extends ReporteSelva {
 
-    datalist1 = KDataList();
-
+    configured = false;
+     tituloPrincipal = "Desempeño 360 por empresas";
 
     configureReport() {
 
+        debugger;
+        if (this.configured) return;
+        this.configured = true;
 
         this.selectorPeriodo.addEvent("change", () => {
             this.loadData2();
@@ -16,7 +19,9 @@ class Reporte360Companias extends ReporteSelva {
                 KRow(
                     KLabel(this.promedioTotal).addCssText("font-weight: bold;")
                         .getMe((me) => this.promedioTotalLabel = me)
-                ),
+                ).center()
+                    .addCssText("margin-top:8px;padding:4px; border: 1px solid gray; width: 792px;"),
+
 
                 KRow(
                     KVerticalBarGraph("Promedios por empresa")
@@ -75,10 +80,6 @@ class Reporte360Companias extends ReporteSelva {
 
                 ).addCssText("margin-top:8px;padding:4px; border: 1px solid gray; width: 792px;")
 
-
-
-
-
             ),
 
             //Tabla por competencias
@@ -93,19 +94,52 @@ class Reporte360Companias extends ReporteSelva {
                             )
 
                             for (let i = 0; i < data.length; i++) {
-                                r.add(KLabel(data[i].COMPETENCIA).setSize(100));
+                                r.add(
+                                    KLabel(data[i].COMPETENCIA)
+                                        .setSize(88)
+                                        .addCssText("font-size: 0.7em;")
+                                        //.addCssText("border-right: 1px solid gray;")
+                                        .addCssText("padding:2px;")
+                                );
                             }
 
                             r.addCssText("background-color: navy; color:white; padding:0px;");
 
+
+                            return r;
+                        }),
+                ),
+                KRow(
+                    //Cuerpo
+                    KDataView()
+                        .getMe((me) => this.cuerpoCompetencias = me)
+                        .setCallbackBuilder((dataView, data) => {
+                            let r = KRow();
+                            for (let i = 0; i < data.length; i++) {
+
+                                r.add(
+                                    KLabel(data[i])
+                                        .setSize(88)
+                                        .addCssText("font-size: 0.7em;")
+                                        .addCssText("text-align: center;")
+                                );
+                            }
+
                             return r;
                         })
-                )
-            )
+                ),
 
+
+            ).addCssText("margin-top:8px;padding:4px; border: 1px solid gray; width: 792px;")
+            , KRow(
+                KImage("media/escala.png")
+                    .setSize(300, 129)
+                    .addCssText("margin-top:8px;")
+                // .setPosition(75, 560)
+            ).setSize(300, 129)
         )
-    }
 
+    }
 
     loadData2() {
         let payload = {
@@ -122,7 +156,7 @@ class Reporte360Companias extends ReporteSelva {
                 this.promedioTotal = data.reduce((a, b) => a + parseFloat(b.promedio), 0) / data.length;
                 this.promedioTotalLabel.clear().setValue(`Promedio total en Venezuela: ${this.promedioTotal}`);
 
-
+                this.grafico1.init();
                 data.forEach(compania => {
                     this.grafico1.addBar(Math.round(compania.promedio), compania.promedio, compania.COMPANIA, compania.COMPANIA);
                 })
@@ -136,27 +170,14 @@ class Reporte360Companias extends ReporteSelva {
         KMessage("servidor", payload, "CARGAR_360_POR_COMPANIAS_Y_COMPETENCIAS", payload)
             .send(this.server)
             .then((data) => {
-                debugger;
+
                 data = JSON.parse(data);
+                console.log(data);
                 let competencias = data.competencias;//.map(comp => comp.COMPETENCIA)
                 this.encabezadoCompetencias.buildByData(competencias);
+
+                this.cuerpoCompetencias.clear().setArrayData(data.arrayData);
             });
-
-
-
-
-
-        /*
-        //Obtenemos el promedio de Venezuela, total:
-        KMessage("servidor", payload, "CALCULAR_PROMEDIO_360_VENEZUELA", payload)
-            .send(this.server)
-            .then((data) => {
-                debugger;
-                this.promedioTotal = parseFloat(JSON.parse(data)[0].promedio);
-                this.promedioTotalLabel.setValue(`Promedio total en Venezuela: ${this.promedioTotal}`);
-            });
-            */
-
     }
 
 

@@ -9,18 +9,9 @@
 
 <body style="position: absolute; width: 100%; height: 100%; margin: 0px;">
 
-
-
-
+    <script src="/Kicsy2/Kicsy2.js"></script>
 
     <script>
-
-        let n = Math.random();
-        let file = `Kicsy2.js?n=${n}`;
-        let s = document.createElement("script");
-        s.src = file;
-        document.head.appendChild(s);
-
 
         Kicsy.load(
             "SelvaApplication.js",
@@ -42,18 +33,15 @@
         ).then(() => {
             KLauncher.pathIcons = "../Kicsy2/media/icons/";
             KLauncher.update();
-
-
             if (localStorage.getItem("user") == null) {
                 KMessage("launcher", {}, "close").send();
                 KMessage("entrada", {}, "run").send();
             }
-
-
-
         });
 
+      
     </script>
+
 
 
 </body>
