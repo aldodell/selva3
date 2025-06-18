@@ -35,7 +35,7 @@ switch ($verb) {
 
     case "VALIDAR_USUARIO":
         try {
-            $sql = "SELECT NOMBRES_APELLIDOS, CEDULA, COMPANIA, EMAIL, PIN FROM expediente WHERE email = :email AND pin  = :pin";
+            $sql = "SELECT NOMBRES_APELLIDOS, CEDULA, COMPANIA, EMAIL, UNIDAD_DE_NEGOCIO, NIVEL_SEGURIDAD FROM expediente WHERE email = :email AND pin  = :pin";
             $statement = $database->prepare($sql);
             $statement->bindParam(":email", $payload->EMAIL);
             $statement->bindParam(":pin", $payload->PIN);
@@ -187,6 +187,16 @@ switch ($verb) {
 
     case "CARGAR_COMPETENCIAS_360":
         $sql = "SELECT * FROM competencias360";
+        $statement = $database->prepare($sql);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
+
+
+    //Carga solo las competencias (distintas) y en orden alfabetico
+    case "CARGAR_SOLO_COMPETENCIAS_360":
+        $sql = "SELECT DISTINCT COMPETENCIA as label, COMPETENCIA as value FROM competencias360 ORDER BY COMPETENCIA ASC";
         $statement = $database->prepare($sql);
         $statement->execute();
         $result = $statement->fetchAll(PDO::FETCH_ASSOC);
@@ -603,6 +613,27 @@ switch ($verb) {
         echo json_encode($result);
         break;
 
+
+    //Carga los evaluados para competencias por cargo 
+//Revisa que los evaluados tengan al menos una evaluacion con calificacionz
+    case "CARGAR_EVALUADOS_POR_CARGO_2":
+        $sql = "SELECT ex.CEDULA as value, ex.NOMBRES_APELLIDOS as label
+            FROM evaluacionesPorCargo ev
+                INNER JOIN expediente ex on ev.idEvaluado = ex.CEDULA
+            WHERE ev.idPeriodo = ?
+                AND ev.calificacion > 0
+            GROUP BY ex.CEDULA
+            ORDER BY ex.NOMBRES_APELLIDOS
+     ";
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
+
+
+
     case "CARGAR_EVALUACIONES_POR_OBJETIVOS":
         $sql = "SELECT * FROM evaluacionesPorObjetivos WHERE idEvaluador = ? AND idEvaluado = ? AND idPeriodo = ?";
         $statement = $database->prepare($sql);
@@ -940,7 +971,7 @@ switch ($verb) {
             $data = [$compania];
             foreach ($competencias as $k2 => $competencia) {
                 $competencia = $competencia["COMPETENCIA"];
-              
+
                 $sql3 = "SELECT round(25 * avg(ev.calificacion)) as C
                     FROM evaluaciones360 ev
                     INNER JOIN competencias360 comp on comp.id = ev.idItem
@@ -976,5 +1007,237 @@ switch ($verb) {
         echo json_encode($packet);
 
         break;
+
+
+    case "CARGAR_UNIDADES_DE_NEGOCIOS":
+
+        $sql = "SELECT DISTINCT UNIDAD_DE_NEGOCIO AS label, UNIDAD_DE_NEGOCIO AS value FROM expediente WHERE UNIDAD_DE_NEGOCIO IS NOT NULL ORDER BY UNIDAD_DE_NEGOCIO ASC";
+        $statement = $database->prepare($sql);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
+
+    case "CARGAR_DEPARTAMENTOS_POR_UNIDAD_NEGOCIO":
+
+        $sql = "SELECT DISTINCT DEPARTAMENTO AS label, DEPARTAMENTO AS value FROM expediente WHERE  UNIDAD_DE_NEGOCIO = ? ORDER BY DEPARTAMENTO ASC";
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->unidadNegocio);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
+
+    case "CARGAR_EVALUADORES_360_POR_UNIDAD_DE_NEGOCIO_Y_DEPARTAMENTO":
+        $sql = "SELECT T.DEPARTAMENTO,
+        sum(T.autoevaluacion) as autoevaluacion,
+        sum(T.jefe) as jefe,
+        sum(T.colaboradores) as colaboradores,
+        sum(T.pares) as pares,
+        (
+            sum(T.autoevaluacion) + sum(T.jefe) + sum(T.colaboradores) + sum(T.pares)
+        ) / (
+            if(sum(T.autoevaluacion) > 0, 1, 0) + if(sum(T.jefe) > 0, 1, 0) + if(sum(T.colaboradores) > 0, 1, 0) + if(sum(T.pares) > 0, 1, 0)
+        ) as promedio
+        FROM (
+            SELECT ex1.DEPARTAMENTO,
+                ROUND(25 * AVG(ev.calificacion)) as autoevaluacion,
+                0 as jefe,
+                0 as colaboradores,
+                0 as pares
+            FROM expediente ex1
+                INNER JOIN evaluaciones360 ev ON ex1.CEDULA = ev.idEvaluado
+                INNER JOIN expediente ex2 ON ex2.CEDULA = ev.idEvaluador
+            WHERE ev.idPeriodo = ?
+                AND ev.calificacion > 0
+                AND ex1.UNIDAD_DE_NEGOCIO = ? 
+                AND ex1.CEDULA = ex2.CEDULA -- autoevaluacion
+            GROUP BY ex1.DEPARTAMENTO
+            UNION
+            SELECT ex1.DEPARTAMENTO,
+                0 as autoevaluacion,
+                ROUND(25 * AVG(ev.calificacion)) as jefe,
+                0 as colaboradores,
+                0 as pares
+            FROM expediente ex1
+                INNER JOIN evaluaciones360 ev ON ex1.CEDULA = ev.idEvaluado
+                INNER JOIN expediente ex2 ON ex2.CEDULA = ev.idEvaluador
+            WHERE ev.idPeriodo = ?
+                AND ev.calificacion > 0
+                AND ex1.UNIDAD_DE_NEGOCIO = ?
+                AND ex1.CEDULA_LIDER = ex2.CEDULA -- JEFE
+            GROUP BY ex1.DEPARTAMENTO
+            UNION
+            SELECT ex1.DEPARTAMENTO,
+                0 as autoevaluacion,
+                0 as jefe,
+                ROUND(25 * AVG(ev.calificacion)) as colaboradores,
+                0 as pares
+            FROM expediente ex1
+                INNER JOIN evaluaciones360 ev ON ex1.CEDULA = ev.idEvaluado
+                INNER JOIN expediente ex2 ON ex2.CEDULA = ev.idEvaluador
+            WHERE ev.idPeriodo = ?
+                AND ev.calificacion > 0
+                AND ex1.UNIDAD_DE_NEGOCIO = ? 
+                AND ex1.CEDULA = ex2.CEDULA_LIDER -- COLABORADORES
+            GROUP BY ex1.DEPARTAMENTO
+            UNION
+            SELECT ex1.DEPARTAMENTO,
+                0 as autoevaluacion,
+                0 as jefe,
+                0 as colaboradores,
+                ROUND(25 * AVG(ev.calificacion)) as pares
+            FROM expediente ex1
+                INNER JOIN evaluaciones360 ev ON ex1.CEDULA = ev.idEvaluado
+                INNER JOIN expediente ex2 ON ex2.CEDULA = ev.idEvaluador
+            WHERE ev.idPeriodo = ?
+                AND ev.calificacion > 0
+                AND ex1.UNIDAD_DE_NEGOCIO = ? 
+                AND ex1.CEDULA <> ex2.CEDULA -- NO ES autoevaluacion
+                AND ex1.CEDULA_LIDER <> ex2.CEDULA -- NO ES JEFE
+                AND ex1.CEDULA <> ex2.CEDULA_LIDER -- NO ES COLABORADORES
+            GROUP BY ex1.DEPARTAMENTO
+        ) as T
+        GROUP BY T.DEPARTAMENTO
+        ORDER BY promedio DESC;
+            ";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->bindValue(2, $payload->unidadNegocio);
+        $statement->bindValue(3, $payload->idPeriodo);
+        $statement->bindValue(4, $payload->unidadNegocio);
+        $statement->bindValue(5, $payload->idPeriodo);
+        $statement->bindValue(6, $payload->unidadNegocio);
+        $statement->bindValue(7, $payload->idPeriodo);
+        $statement->bindValue(8, $payload->unidadNegocio);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+
+        break;
+
+    case "CARGAR_EVALUACIONES_360_POR_UNIDAD_DE_NEGOCIO_Y_DEPARTAMENTOS_Y_COMPETENCIAS":
+
+        $output = [];
+
+        //Obtenemos las competencias
+        $sql = "SELECT DISTINCT competencia FROM competencias360 order by competencia ASC";
+        $statement = $database->prepare($sql);
+        $statement->execute();
+        $competencias = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        //Obtenemos los departamentos de la unidad de unidadNegocio
+        $sql = "SELECT DISTINCT departamento FROM expediente WHERE unidad_de_negocio = ? ORDER BY departamento ASC";
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->unidadNegocio);
+        $statement->execute();
+        $departamentos = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        //Recorremos cada detarmento
+        foreach ($departamentos as $departamento) {
+
+            $rows = (object) [];
+            $rows->DEPARTAMENTO = $departamento["departamento"];
+
+            //Recorremos cada competencia
+            foreach ($competencias as $competencia) {
+
+                //Obtenemos el promedio por competencia y departamento
+                $sql = "SELECT
+                        round(25 * avg(ev.calificacion)) as c
+                        FROM evaluaciones360 ev
+                            INNER JOIN competencias360 comp on ev.idItem = comp.id
+                            INNER JOIN expediente ex1 on ev.idEvaluado = ex1.CEDULA
+                        WHERE ev.calificacion > 0
+                            AND ev.idPeriodo = ?
+                            AND ex1.UNIDAD_DE_NEGOCIO = ?
+                            AND ex1.DEPARTAMENTO = ?
+                        GROUP BY ex1.departamento, comp.COMPETENCIA";
+
+                $statement = $database->prepare($sql);
+                $statement->bindValue(1, $payload->idPeriodo);
+                $statement->bindValue(2, $payload->unidadNegocio);
+                $statement->bindValue(3, $departamento["departamento"]);
+                $statement->execute();
+                $fields = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+
+                for ($i = 0; $i < count($fields); $i++) {
+                    $rows->{"p$i"} = $fields[$i]["c"];
+                }
+
+            }
+
+            $output[] = $rows;
+
+        }
+
+        echo json_encode($output);
+        break;
+
+    //Devuelve la competencia, el tipo de competencia y la calificación de un emleado
+    //En la evaluación de competencias por cargo
+    case "CARGAR_CALIFICACIONES_COMPETENCIAS_POR_CARGO_POR_EMPLEADO":
+        $sql = "SELECT cpc.COMPETENCIA,
+                cpc.TIPO_COMPETENCIA,
+                round(25 * avg(ev.calificacion)) as CALIFICACION
+            FROM expediente ex
+                INNER JOIN evaluacionesPorCargo ev ON ex.CEDULA = ev.idEvaluado
+                INNER JOIN competenciasPorCargos cpc ON ev.idItem = cpc.id
+            WHERE ev.idEvaluado = ?
+                AND ev.idPeriodo = ?
+                AND ev.calificacion > 0
+                GROUP BY
+                cpc.COMPETENCIA
+                ORDER BY cpc.id
+        ";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->CEDULA);
+        $statement->bindValue(2, $payload->idPeriodo);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+
+
+    case "CARGAR_EVALUACION_POR_CARGO_POR_UNIDAD_DE_NEGOCIO":
+        $sql = "SELECT ex.UNIDAD_DE_NEGOCIO,
+                round(25 * avg(ev.calificacion)) as calificacion
+                FROM evaluacionesPorCargo ev
+                INNER JOIN expediente ex on ev.idEvaluado = ex.CEDULA
+                WHERE ev.idPeriodo = ?
+                AND ev.calificacion > 0
+                GROUP BY ex.UNIDAD_DE_NEGOCIO
+                ORDER BY calificacion DESC";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+
+
+        break;
+
+    case "CARGAR_EVALUACIONES_POR_CARGOS_POR_UNIDAD_DE_NEGOCIOS_Y_DEPARTAMENTOS":
+        $sql = "SELECT ex.UNIDAD_DE_NEGOCIO,
+            ex.DEPARTAMENTO,
+            round(25 * avg(ev.calificacion)) as calificacion,
+            ex.NOMBRES_APELLIDOS as trabajador
+            FROM evaluacionesPorCargo ev
+            INNER JOIN expediente ex on ev.idEvaluado = ex.CEDULA
+            WHERE ev.idPeriodo = ?
+            AND ev.calificacion > 0
+            GROUP BY trabajador
+            HAVING calificacion > 0
+            ORDER BY  ex.DEPARTAMENTO, calificacion DESC";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+
 
 }

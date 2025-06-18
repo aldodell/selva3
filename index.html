@@ -9,37 +9,77 @@
 
 <body style="position: absolute; width: 100%; height: 100%; margin: 0px;">
 
-    <script src="/Kicsy2/Kicsy2.js"></script>
-
+    <script defer src="/Kicsy2/KicsyLoader.js"></script>
     <script>
-
-        Kicsy.load(
-            "SelvaApplication.js",
-            "Entrada.js",
-            "Expediente.js",
-            "Ficha.js",
-            "AdministrarCompetencias360.js",
-            "AdministrarCompetenciasPorCargo.js",
-            "AdministrarAsignaciones.js",
-
-            "Evaluacion360.js",
-            "EvaluacionCompetenciaPorCargo.js",
-            "EvaluacionHabilidadesTecnicas.js",
-            "EvaluacionPorObjetivos.js",
-            "ReporteSelva.js",
-            "Reporte360Personal.js",
-            "Reporte360Companias.js",
-
-        ).then(() => {
-            KLauncher.pathIcons = "../Kicsy2/media/icons/";
-            KLauncher.update();
-            if (localStorage.getItem("user") == null) {
-                KMessage("launcher", {}, "close").send();
-                KMessage("entrada", {}, "run").send();
+        const KICSY_MANIFEST = {
+            "kicsyPath": "../Kicsy2/",
+            "workingPath": "/selva3/",
+            "modules": [
+                "SelvaApplication.js",
+                "Entrada.js",
+                "Expediente.js",
+                "Ficha.js",
+                "AdministrarCompetencias360.js",
+                "AdministrarCompetenciasPorCargo.js",
+                "AdministrarAsignaciones.js",
+                "Evaluacion360.js",
+                "EvaluacionCompetenciaPorCargo.js",
+                "EvaluacionHabilidadesTecnicas.js",
+                "EvaluacionPorObjetivos.js",
+                "ReporteSelva.js",
+                "Reporte360Personal.js",
+                "Reporte360Companias.js",
+                "Reporte360UnidadNegocio.js",
+                "ReporteCargoPersonal.js",
+                "ReporteCargoUnidadDeNegocio.js",
+                "ReporteCargoUnidadDeNegocioYDepartamento.js"
+            ],
+            postLoadCallback: () => {
+                KLauncher.pathIcons = "media/icons/";
+                KLauncher.update();
+                if (localStorage.getItem("user") == null) {
+                    KMessage("launcher", {}, "close").send();
+                    KMessage("entrada", {}, "run").send();
+                }
             }
-        });
+        
+        }
 
-      
+
+        /*
+        
+        
+      //  <script src="/Kicsy2/Kicsy2.js"></scr ipt>
+        
+                Kicsy.load(
+                    "SelvaApplication.js",
+                    "Entrada.js",
+                    "Expediente.js",
+                    "Ficha.js",
+                    "AdministrarCompetencias360.js",
+                    "AdministrarCompetenciasPorCargo.js",
+                    "AdministrarAsignaciones.js",
+                    "Evaluacion360.js",
+                    "EvaluacionCompetenciaPorCargo.js",
+                    "EvaluacionHabilidadesTecnicas.js",
+                    "EvaluacionPorObjetivos.js",
+                    "ReporteSelva.js",
+                    "Reporte360Personal.js",
+                    "Reporte360Companias.js",
+                    "Reporte360UnidadNegocio.js",
+        
+                ).then(() => {
+                    KLauncher.pathIcons = "../Kicsy2/media/icons/";
+                    KLauncher.update();
+                    if (localStorage.getItem("user") == null) {
+                        KMessage("launcher", {}, "close").send();
+                        KMessage("entrada", {}, "run").send();
+                    }
+                });
+        
+        */
+
+
     </script>
 
 

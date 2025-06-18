@@ -6,5 +6,23 @@
 		{
 			"path": "../Kicsy2"
 		}
-	]
+	],
+	"settings": {
+		"sqltools.connections": [
+			{
+				"mysqlOptions": {
+					"authProtocol": "default",
+					"enableSsl": "Disabled"
+				},
+				"previewLimit": 50,
+				"server": "localhost",
+				"port": 3306,
+				"driver": "MySQL",
+				"name": "selva",
+				"database": "aasxwjte_selva",
+				"username": "aasxwjte_selva",
+				"password": "Selva2024."
+			}
+		]
+	}
 }

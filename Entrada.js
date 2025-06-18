@@ -3,20 +3,24 @@ class Entrada extends SelvaApplication {
 
     validarUsuario() {
 
+        //Obtenemos los datos del formulario
         let payload = this.blockData.getData();
 
+        //Hacemos la petición al servidor para validar el usuario
         KMessage("servidor", payload, "VALIDAR_USUARIO")
             .send(this.server)
             .then(data => {
-
+               
+                //Parseamos la respuesta
                 data = JSON.parse(data);
 
                 if (!data) {
-                    alert("Usuario o contraseña incorrectos");
+                    //No pasó la validación
+                    alert("Usuario desconocido o contraseña incorrecta.");
                 } else {
 
+                    //Sí pasó la validación
                     let user = KUser(data.EMAIL, data);
-
                     SelvaApplication.user = user;
                     localStorage.setItem("user", JSON.stringify(user));
 
@@ -28,6 +32,7 @@ class Entrada extends SelvaApplication {
     }
 
 
+    //Obtiene la pantalla inicial
     getInitScreen() {
 
         if (this.initScreen) return this.initScreen;
@@ -62,7 +67,9 @@ class Entrada extends SelvaApplication {
     loadData() {
         this.navigationController.navigateTo(this.getInitScreen());
 
+        //Cargamos el usuario local
         let user = localStorage.getItem("user");
+        
         if (user) {
             user = JSON.parse(user);
             SelvaApplication.user = user;
