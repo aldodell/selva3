@@ -62,6 +62,7 @@ class ReporteCargoUnidadDeNegocio extends ReporteSelva {
                     data = JSON.parse(data);
 
                     let i = 1;
+                    this.grafico1.init();
                     data = data.map(e => {
                         e.n = i;
                         i++;
@@ -71,18 +72,11 @@ class ReporteCargoUnidadDeNegocio extends ReporteSelva {
 
                     console.log(data);
                     this.grafico1.render();
-
                     this.tabla1.setArrayData(data);
 
                 });
 
         });
-
-
-
-
-
-
 
     }
 

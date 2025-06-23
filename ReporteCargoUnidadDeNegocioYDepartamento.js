@@ -12,31 +12,44 @@ class ReporteCargoUnidadDeNegocioYDepartamento extends ReporteSelva {
             .add(
 
                 KRow(
-                    KLabel("UNIDAD DE NEGOCIO").addCssText("flex-basis: 200px;"),
+                    KLabel("UNIDAD DE NEGOCIO")
+                        .addCssText("flex-basis: 200px; "),
                     KSelect()
                         .getMe((me) => this.selectorUnidadDeNegocio = me)
                         .addEvent("change", () => this.loadData2())
+
                 ),
 
                 KRow(
-                    KLabel("DEPARTAMENTO").addCssText("flex-basis: 200px;"),
+                    KLabel("DEPARTAMENTO")
+                        .addCssText("flex-basis: 200px; "),
                     KSelect()
                         .getMe((me) => this.selectorDepartamento = me)
                         .addEvent("change", () => this.loadData3())
+
                 ),
-                KRow(
-                    KLabel("PROMEDIO VENEZUELA:"),
-                    KLabel("0", "promedioVenezuela"),
-                ),
-                KRow(
-                    KLabel("PROMEDIO UNIDAD DE NEGOCIO:"),
-                    KLabel("", "promedioUnidadNegocio")
+                KColumn(
+                    KRow(
+                        KLabel("PROMEDIO VENEZUELA:")
+                            .addCssText("flex-basis: 300px; ")
+                        ,
+                        KLabel("0", "promedioVenezuela"),
+                    ),
+                    KRow(
+                        KLabel("PROMEDIO UNIDAD DE NEGOCIO:")
+                            .addCssText("flex-basis: 300px; ")
+                        ,
+                        KLabel("", "promedioUnidadNegocio")
+                    )
+                    ,
+                    KRow(
+                        KLabel("PROMEDIO DEPARTAMENTO:")
+                            .addCssText("flex-basis: 300px; ")
+                        ,
+                        KLabel("", "promedioDepartamento")
+                    ),
                 )
-                ,
-                KRow(
-                    KLabel("PROMEDIO DEPARTAMENTO:"),
-                    KLabel("", "promedioDepartamento")
-                ),
+                    .addCssText("width:350px; border: 1px solid gray; padding: 4px; margin-top: 8px; margin-bottom: 8px; background-color: lightgray;"),
 
 
                 KRow(
