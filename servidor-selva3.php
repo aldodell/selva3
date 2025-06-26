@@ -1239,5 +1239,107 @@ switch ($verb) {
         $result = $statement->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode($result);
 
+        break;
+
+    case "CARGAR_EVALUACION_POR_CARGO_PROMEDIO_EMPRESAS":
+        $sql = "SELECT CEIL(25 * AVG(ev.calificacion)) as calificacion,
+                    ex.COMPANIA
+                    FROM evaluacionesPorCargo ev
+                    INNER JOIN expediente ex ON ev.idEvaluado = ex.CEDULA
+                    WHERE ev.idPeriodo = ?
+                    AND ev.calificacion > 0
+                    GROUP BY ex.COMPANIA;";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
+
+    case "CARGAR_TRABAJADORES_CON_EVALUACION_POR_OBJETIVOS":
+        $sql = "SELECT
+                ex.NOMBRES_APELLIDOS as label,
+                ex.CEDULA as value
+                FROM expediente ex
+                INNER JOIN evaluacionesPorObjetivos ev ON ex.CEDULA = ev.idEvaluado
+                WHERE ev.idPeriodo = ?
+                AND ev.idEvaluador = ?
+                GROUP BY ex.NOMBRES_APELLIDOS";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->bindValue(2, $payload->idEvaluador);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
+
+    case "CARGAR_CALIFICACIONES_OBJETIVOS_POR_TRABAJADOR":
+        $sql = "SELECT objetivo1,
+                objetivo2,
+                objetivo3,
+                objetivo4,
+                ponderacion1,
+                ponderacion2,
+                ponderacion3,
+                ponderacion4,
+                calificacion1,
+                calificacion2,
+                calificacion3,
+                calificacion4
+                FROM evaluacionesPorObjetivos
+                WHERE idEvaluado = ?
+                AND idEvaluador = ?
+                AND idPeriodo = ?";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idEvaluado);
+        $statement->bindValue(2, $payload->idEvaluador);
+        $statement->bindValue(3, $payload->idPeriodo);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
+
+    case "CARGAR_PROMEDIO_POR_EMPRESA_EVALUACIONES_OBJETIVOS":
+        $sql = "SELECT ex.COMPANIA as empresa,
+            (
+            ((avg(calificacion1) * 25) * (ponderacion1 / 100)) + ((avg(calificacion2) * 25) * (ponderacion2 / 100)) + ((avg(calificacion3) * 25) * (ponderacion3 / 100)) + ((avg(calificacion4) * 25) * (ponderacion4 / 100))
+            ) AS promedio
+            FROM evaluacionesPorObjetivos ev
+            INNER JOIN expediente ex on ev.idEvaluado = ex.CEDULA
+            AND ev.idPeriodo = ?
+            GROUP BY ex.COMPANIA";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
+
+
+    case "CARGAR_EVALUACION_OBJETIVOS_POR_UNIDAD_DE_NEGOCIO":
+            $sql = "SELECT ex.UNIDAD_DE_NEGOCIO as UNIDAD_DE_NEGOCIO,
+            (
+            ((avg(calificacion1) * 25) * (ponderacion1 / 100)) + ((avg(calificacion2) * 25) * (ponderacion2 / 100)) + ((avg(calificacion3) * 25) * (ponderacion3 / 100)) + ((avg(calificacion4) * 25) * (ponderacion4 / 100))
+            ) AS promedio
+            FROM evaluacionesPorObjetivos ev
+            INNER JOIN expediente ex on ev.idEvaluado = ex.CEDULA
+            AND ev.idPeriodo = ?
+            GROUP BY ex.UNIDAD_DE_NEGOCIO
+            ORDER BY promedio DESC";
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+
+
+        break;
+
+
+
 
 }

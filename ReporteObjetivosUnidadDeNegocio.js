@@ -1,5 +1,5 @@
-class ReporteCargoUnidadDeNegocio extends ReporteSelva {
-    tituloPrincipal = "COMPETENCIAS POR CARGO";
+class ReporteObjetivosUnidadDeNegocio extends ReporteSelva {
+    tituloPrincipal = "EVALUACION POR OBJETIVOS";
     empleadosDataList = KDataList();
     buscadorEmpleados;
 
@@ -8,10 +8,10 @@ class ReporteCargoUnidadDeNegocio extends ReporteSelva {
             .add(
                 KRow(
                     KVerticalBarGraph("Unidades de negocio")
-                    .setTitle(
-                        KLabel("EVALUACION POR UNIDAD DE NEGOCIO")
-                        .addCssText("font-weight: bold;text-align: center;")
-                    )
+                        .setTitle(
+                            KLabel("UNIDAD DE NEGOCIO")
+                                .addCssText("font-weight: bold;text-align: center;")
+                        )
                         .addReferenceValues(60, 70, 80, 90, 100)
                         .setSize(800, 400)
                         .getMe(me => this.grafico1 = me)
@@ -35,7 +35,7 @@ class ReporteCargoUnidadDeNegocio extends ReporteSelva {
                         return KRow(
                             KLabel("ID", "n").setSize(20),
                             KLabel("UNIDAD DE NEGOCIO", "UNIDAD_DE_NEGOCIO").setSize(680),
-                            KLabel("PROMEDIO", "calificacion").setSize(80)
+                            KLabel("PROMEDIO", "promedio").setSize(80)
                                 .addCssText("text-align: center;")
                         )
                     }),
@@ -54,19 +54,20 @@ class ReporteCargoUnidadDeNegocio extends ReporteSelva {
                 //"cargo": this.selectorCargo.getValue()
             }
 
-            KMessage("servidor", payload, "CARGAR_EVALUACION_POR_CARGO_POR_UNIDAD_DE_NEGOCIO", payload)
+            KMessage("servidor", payload, "CARGAR_EVALUACION_OBJETIVOS_POR_UNIDAD_DE_NEGOCIO", payload)
                 .send(this.server)
                 .then((data) => {
 
-                  
+
                     data = JSON.parse(data);
 
                     let i = 1;
                     this.grafico1.init();
                     data = data.map(e => {
+                        e.promedio = parseInt(e.promedio);
                         e.n = i;
                         i++;
-                        this.grafico1.addBar(e.calificacion, "", e.n, this.getColorByValue(e.calificacion));
+                        this.grafico1.addBar(e.promedio, "", e.n, this.getColorByValue(e.promedio));
                         return e;
                     })
 
@@ -82,9 +83,9 @@ class ReporteCargoUnidadDeNegocio extends ReporteSelva {
 
 
     constructor() {
-        super("reporteCargoUnidadDeNegocio",
-            new KLauncherInfoClass("Competencias por cargo: Unidades de negocio", 0, "system", true, "competencias_reporte.png"));
+        super("reporteObjetivosUnidadDeNegocio",
+            new KLauncherInfoClass("Objetivos: Unidades de negocio", 0, "system", true, "competencias_reporte.png"));
     }
 }
 
-new ReporteCargoUnidadDeNegocio().register();
+new ReporteObjetivosUnidadDeNegocio().register();
