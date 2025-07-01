@@ -188,7 +188,7 @@ class Reporte360Companias extends ReporteSelva {
     }
     constructor() {
         super("reporte360Companias",
-            new KLauncherInfoClass("Reporte 360 Empresas", 0, "system", true));
+            new KLauncherInfoClass("Reporte 360 Empresas", 0, "system", true,"360.png"));
     }
 }
 

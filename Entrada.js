@@ -80,7 +80,7 @@ class Entrada extends SelvaApplication {
 
     constructor() {
         super("entrada",
-            new KLauncherInfoClass("Entrada", 0, "system", true));
+            new KLauncherInfoClass("Entrada", 0, "system", true, "puerta.png"));
     }
 }
 new Entrada().register();

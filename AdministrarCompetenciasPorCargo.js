@@ -135,7 +135,7 @@ class AdministrarCompetenciasPorCargo extends SelvaApplication {
 
     constructor() {
         super("administrarCompetenciasPorCargo",
-            new KLauncherInfoClass("Administrar competencias por cargo", 0, "system", true)
+            new KLauncherInfoClass("Administrar competencias por cargo", 0, "system", true, "adm_competencias.png")
         );
     }
 }

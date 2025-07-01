@@ -58,7 +58,7 @@ class ReporteCargoCompania extends ReporteSelva {
                 data.forEach(e => {
                     this.grafico1.addBar(e.calificacion, "", e.COMPANIA, this.getColorByValue(e.calificacion));
                 })
-                this.grafico1.render();
+                this.grafico1.render(); 
 
             });
 

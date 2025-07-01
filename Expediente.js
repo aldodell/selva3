@@ -105,7 +105,7 @@ class Expendiente extends SelvaApplication {
 
     constructor() {
         super("expediente",
-            new KLauncherInfoClass("Expediente", 0, "system", true)
+            new KLauncherInfoClass("Expediente", 0, "system", true, "expediente.png")
         );
 
     }

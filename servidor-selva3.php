@@ -1321,7 +1321,7 @@ switch ($verb) {
 
 
     case "CARGAR_EVALUACION_OBJETIVOS_POR_UNIDAD_DE_NEGOCIO":
-            $sql = "SELECT ex.UNIDAD_DE_NEGOCIO as UNIDAD_DE_NEGOCIO,
+        $sql = "SELECT ex.UNIDAD_DE_NEGOCIO as UNIDAD_DE_NEGOCIO,
             (
             ((avg(calificacion1) * 25) * (ponderacion1 / 100)) + ((avg(calificacion2) * 25) * (ponderacion2 / 100)) + ((avg(calificacion3) * 25) * (ponderacion3 / 100)) + ((avg(calificacion4) * 25) * (ponderacion4 / 100))
             ) AS promedio
@@ -1338,6 +1338,124 @@ switch ($verb) {
 
 
         break;
+
+
+
+
+    case "CARGAR_EVALUACIONES_POR_OBJETIVOS_POR_UNIDAD_DE_NEGOCIOS_Y_DEPARTAMENTOS":
+        $sql = "SELECT ex.UNIDAD_DE_NEGOCIO,
+            ex.DEPARTAMENTO,
+             round(
+            ((avg(calificacion1) * 25) * (ponderacion1 / 100)) + ((avg(calificacion2) * 25) * (ponderacion2 / 100)) + ((avg(calificacion3) * 25) * (ponderacion3 / 100)) + ((avg(calificacion4) * 25) * (ponderacion4 / 100))
+            ) as calificacion,
+            ex.NOMBRES_APELLIDOS as trabajador
+            FROM evaluacionesPorObjetivos ev
+            INNER JOIN expediente ex on ev.idEvaluado = ex.CEDULA
+            WHERE ev.idPeriodo = ?
+           
+            GROUP BY trabajador
+            HAVING calificacion > 0
+            ORDER BY  ex.DEPARTAMENTO, calificacion DESC";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+
+        break;
+
+
+    case "CARGAR_EVALUADORES_360_COMITE":
+
+        $sql = "SELECT T.NOMBRES_APELLIDOS,
+        sum(T.autoevaluacion) as autoevaluacion,
+        sum(T.jefe) as jefe,
+        sum(T.colaboradores) as colaboradores,
+        sum(T.pares) as pares,
+        (
+        sum(T.autoevaluacion) + sum(T.jefe) + sum(T.colaboradores) + sum(T.pares)
+        ) / (
+        if(sum(T.autoevaluacion) > 0, 1, 0) + if(sum(T.jefe) > 0, 1, 0) + if(sum(T.colaboradores) > 0, 1, 0) + if(sum(T.pares) > 0, 1, 0)
+        ) as promedio
+        FROM (
+        SELECT ex1.NOMBRES_APELLIDOS,
+            ROUND(25 * AVG(ev.calificacion)) as autoevaluacion,
+            0 as jefe,
+            0 as colaboradores,
+            0 as pares
+        FROM expediente ex1
+            INNER JOIN evaluaciones360 ev ON ex1.CEDULA = ev.idEvaluado
+            INNER JOIN expediente ex2 ON ex2.CEDULA = ev.idEvaluador
+        WHERE ev.idPeriodo = ?
+            AND ev.calificacion > 0
+            AND ex1.ACTIVO = 1
+            AND ex1.COMITE = 1
+            AND ex1.CEDULA = ex2.CEDULA -- autoevaluacion
+        GROUP BY ex1.NOMBRES_APELLIDOS
+        UNION
+        SELECT ex1.NOMBRES_APELLIDOS,
+            0 as autoevaluacion,
+            ROUND(25 * AVG(ev.calificacion)) as jefe,
+            0 as colaboradores,
+            0 as pares
+        FROM expediente ex1
+            INNER JOIN evaluaciones360 ev ON ex1.CEDULA = ev.idEvaluado
+            INNER JOIN expediente ex2 ON ex2.CEDULA = ev.idEvaluador
+        WHERE ev.idPeriodo = ?
+            AND ev.calificacion > 0
+            AND ex1.ACTIVO = 1
+            AND ex1.COMITE = 1
+            AND ex1.CEDULA_LIDER = ex2.CEDULA -- JEFE
+        GROUP BY ex1.NOMBRES_APELLIDOS
+        UNION
+        SELECT ex1.NOMBRES_APELLIDOS,
+            0 as autoevaluacion,
+            0 as jefe,
+            ROUND(25 * AVG(ev.calificacion)) as colaboradores,
+            0 as pares
+        FROM expediente ex1
+            INNER JOIN evaluaciones360 ev ON ex1.CEDULA = ev.idEvaluado
+            INNER JOIN expediente ex2 ON ex2.CEDULA = ev.idEvaluador
+        WHERE ev.idPeriodo = ?
+            AND ev.calificacion > 0
+            AND ex1.ACTIVO = 1
+            AND ex1.COMITE = 1
+            AND ex1.CEDULA = ex2.CEDULA_LIDER -- COLABORADORES
+        GROUP BY ex1.NOMBRES_APELLIDOS
+        UNION
+        SELECT ex1.NOMBRES_APELLIDOS,
+            0 as autoevaluacion,
+            0 as jefe,
+            0 as colaboradores,
+            ROUND(25 * AVG(ev.calificacion)) as pares
+        FROM expediente ex1
+            INNER JOIN evaluaciones360 ev ON ex1.CEDULA = ev.idEvaluado
+            INNER JOIN expediente ex2 ON ex2.CEDULA = ev.idEvaluador
+        WHERE ev.idPeriodo = ?
+            AND ev.calificacion > 0
+            AND ex1.ACTIVO = 1
+            AND ex1.COMITE = 1
+            AND ex1.CEDULA <> ex2.CEDULA -- NO ES autoevaluacion
+            AND ex1.CEDULA_LIDER <> ex2.CEDULA -- NO ES JEFE
+            AND ex1.CEDULA <> ex2.CEDULA_LIDER -- NO ES COLABORADORES
+        GROUP BY ex1.NOMBRES_APELLIDOS
+        ) as T
+        GROUP BY T.NOMBRES_APELLIDOS
+        ORDER BY promedio DESC;
+            ";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->bindValue(2, $payload->idPeriodo);
+        $statement->bindValue(3, $payload->idPeriodo);
+        $statement->bindValue(4, $payload->idPeriodo);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+
+        break;
+
 
 
 

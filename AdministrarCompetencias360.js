@@ -169,7 +169,7 @@ class AdministrarCompetencias360 extends SelvaApplication {
 
     constructor() {
         super("administrarCompetencias360",
-            new KLauncherInfoClass("Administrar Competencias 360", 0, "system", true));
+            new KLauncherInfoClass("Administrar Competencias 360", 0, "system", true, "adm_360.png"));
     }
 }
 

@@ -27,6 +27,7 @@
                 "EvaluacionHabilidadesTecnicas.js",
                 "EvaluacionPorObjetivos.js",
                 "ReporteSelva.js",
+                "Reporte360Comite.js",
                 "Reporte360Personal.js",
                 "Reporte360Companias.js",
                 "Reporte360UnidadNegocio.js",
@@ -36,9 +37,15 @@
                 "ReporteCargoCompania.js",
                 "ReporteObjetivosPersonal.js",
                 "ReporteObjetivosPorEmpresas.js",
-                "ReporteObjetivosUnidadDeNegocio.js"
+                "ReporteObjetivosUnidadDeNegocio.js",
+                "ReporteObjetivosUnidadDeNegocioYDepartamento.js"
             ],
             postLoadCallback: () => {
+                KLauncher.setBodyCssText("background-color: white;");
+                KLauncher.setIconsCssText("background-color: white; opacity: 0.7;");
+                KLauncher.setBackCssText("background-color: rgb(255,255,255,0.8); background-image: url(media/talento_humano.png); background-repeat: no-repeat; background-blend-mode: lighten;");
+                //setBackCssText
+
                 KLauncher.pathIcons = "media/icons/";
                 KLauncher.update();
                 if (localStorage.getItem("user") == null) {

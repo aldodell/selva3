@@ -73,7 +73,7 @@ class ReporteObjetivosPorEmpresas extends ReporteSelva {
 
     constructor() {
         super("reporteObjetivosEmpresas",
-            new KLauncherInfoClass("Reporte de objetivos por empresas", 0, "system", true, "competencias_reporte.png"));
+            new KLauncherInfoClass("Reporte de objetivos por empresas", 0, "system", true, "objetivos_reporte.png"));
     }
 }
 

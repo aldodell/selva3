@@ -217,7 +217,7 @@ class Ficha extends SelvaApplication {
 
     constructor() {
         super("ficha",
-            new KLauncherInfoClass("Ficha", 0, "system", true)
+            new KLauncherInfoClass("Ficha", 0, "system", true,"ficha.png")
         );
 
     }

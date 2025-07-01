@@ -84,7 +84,7 @@ class ReporteObjetivosUnidadDeNegocio extends ReporteSelva {
 
     constructor() {
         super("reporteObjetivosUnidadDeNegocio",
-            new KLauncherInfoClass("Objetivos: Unidades de negocio", 0, "system", true, "competencias_reporte.png"));
+            new KLauncherInfoClass("Objetivos: Unidades de negocio", 0, "system", true, "objetivos_reporte.png"));
     }
 }
 

@@ -270,7 +270,7 @@ class Evaluacion360 extends SelvaApplication {
 
     }
 
-    constructor(name = "evaluacion360", launcherInfoWrapper = new KLauncherInfoClass("Evaluacion 360", 0, "system", true)) {
+    constructor(name = "evaluacion360", launcherInfoWrapper = new KLauncherInfoClass("Evaluacion 360", 0, "system", true, "360a.png")) {
         super(name, launcherInfoWrapper);
     }
 }
