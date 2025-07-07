@@ -1,10 +1,8 @@
 class Reporte360Comite extends ReporteSelva {
 
-
-    tituloPrincipal = "Desempeño 360 por empresas";
+    tituloPrincipal = "360 COMITE";
 
     configureReport() {
-
 
         this.getReport()
             .add(
@@ -12,24 +10,113 @@ class Reporte360Comite extends ReporteSelva {
                 KRow(
                     KLabel("PROMEDIO COMITE")
                 ),
+                //bambina.
+                KColumn(
+                    KRow(
+                        KLabel("PERSONA").setSize(350),
+                        KLabel("DEPARTAMENTO").setSize(300),
+                        KLabel("PROMEDIO").setSize(100),
+
+                    ).addCssText("background-color:navy; color: white; font-weight: bold;")
+                    ,
+
+                    KDataView()
+                        .getMe(me => this.tabla1 = me)
+                        .addEvenRowCssText("background-color: lightgray;")
+                        .setCallbackBuilder((dv, row) => {
+                            row["promedio"] = Math.round(parseFloat(row["promedio"]));
+                            return KRow(
+                                KLabel("", "NOMBRES_APELLIDOS").setSize(350),
+                                KLabel("", "DEPARTAMENTO").setSize(300),
+                                KLabel("", "promedio").setSize(100).addCssText("text-align: center;"),
+
+                            )
+                        }),
+                ).addCssText("border: 1px solid gray;  width: 792px; margin-top:8px;padding:4px; border-radius: 4px;")
+
+                ,
 
                 KRow(
-                    KLabel("PERSONA"),
-                    KLabel("DEPARTAMENTO"),
-                    KLabel("PROMEDIO"),
-                    KLabel("CRITERIO")
-                ),
-
-                KDataView()
-                    .getMe(me => this.tabla1 = me)
-                    .setCallbackBuilder((dv, row) => {
-                        KLabel("", "PERSONA"),
-                            KLabel("", "DEPARTAMENTO"),
-                            KLabel("", "PROMEDIO"),
-                            KLabel("", "CRITERIO")
-                    }),
+                    KVerticalBarGraph("Evaluadores")
+                        .addReferenceValues(60, 70, 80, 90, 100)
+                        .setSize(800, 400)
+                        .getMe(me => this.grafico1 = me)
+                        .setBarWidth(100)
+                ).setSize(800, 400)
+                ,
 
 
+                KRow(
+                    KImage("media/escala.png")
+                        .setSize(300, 129)
+                        .addCssText("margin-top:8px;")
+                    // .setPosition(75, 560)
+                ).setSize(300, 129)
+
+            )
+
+
+
+    }
+
+    loadData2() {
+
+
+        let payload = {
+            idPeriodo: this.selectorPeriodo.getValue()
+        }
+
+
+        //Obtenemos los valores de todas las empresas
+        KMessage("servidor", payload, "CARGAR_EVALUADORES_360_COMITE", payload)
+            .send(this.server)
+            .then((data) => {
+
+
+
+                data = JSON.parse(data);
+
+                this.tabla1.setArrayData(data);
+
+                let promedioAutoevaluacion = data.reduce((a, b) => a + parseFloat(b.autoevaluacion), 0) / data.length;
+                let promedioJefe = data.reduce((a, b) => a + parseFloat(b.jefe), 0) / data.length;
+                let promedioPares = data.reduce((a, b) => a + parseFloat(b.pares), 0) / data.length;
+                let promedioColaboradores = data.reduce((a, b) => a + parseFloat(b.colaboradores), 0) / data.length;
+
+
+                this.grafico1.addBar(promedioAutoevaluacion, "promedio", "Autoevaluacion", this.getColorByValue(promedioAutoevaluacion))
+                this.grafico1.addBar(promedioJefe, "promedio", "Jefe", this.getColorByValue(promedioJefe))
+                this.grafico1.addBar(promedioPares, "promedio", "Pares", this.getColorByValue(promedioPares))
+                this.grafico1.addBar(promedioColaboradores, "promedio", "Colaboradores", this.getColorByValue(promedioColaboradores))
+                this.grafico1.render();
+
+
+            });
+
+
+
+    }
+
+
+    loadData() {
+        super.loadData(() => this.loadData2());
+        this.getReport();
+
+    }
+    constructor() {
+        super("reporte360Comite",
+            new KLauncherInfoClass("Reporte 360 comité", 0, "system", true, "360.png"));
+    }
+}
+
+new Reporte360Comite().register();
+
+
+
+
+/**
+ * 
+ * 
                 // <---- Tabla general --->
                 //encabezado de la tabla
                 KRow(
@@ -79,69 +166,4 @@ class Reporte360Comite extends ReporteSelva {
             ,
 
 
-            KRow(
-                KImage("media/escala.png")
-                    .setSize(300, 129)
-                    .addCssText("margin-top:8px;")
-                // .setPosition(75, 560)
-            ).setSize(300, 129)
-
-
-
-    }
-
-    loadData2() {
-        let payload = {
-            idPeriodo: this.selectorPeriodo.getValue()
-        }
-
-
-        //Obtenemos los valores de todas las empresas
-        KMessage("servidor", payload, "CARGAR_EVALUADORES_360_COMITE", payload)
-            .send(this.server)
-            .then((data) => {
-
-                debugger;
-
-                data = JSON.parse(data);
-
-                //this.promedioTotal = data.reduce((a, b) => a + parseFloat(b.promedio), 0) / data.length;
-                // this.promedioTotalLabel.clear().setValue(`Promedio total en Venezuela: ${this.promedioTotal}`);
-
-                this.grafico1.init();
-                data.forEach(persona => {
-                    this.grafico1.addBar();
-                })
-
-                this.grafico1.render();
-                this.tablaEvaluadores.setArrayData(data);
-
-            });
-
-
-        KMessage("servidor", payload, "CARGAR_360_POR_COMPANIAS_Y_COMPETENCIAS", payload)
-            .send(this.server)
-            .then((data) => {
-
-                data = JSON.parse(data);
-                console.log(data);
-                let competencias = data.competencias;//.map(comp => comp.COMPETENCIA)
-                this.encabezadoCompetencias.buildByData(competencias);
-
-                this.cuerpoCompetencias.clear().setArrayData(data.arrayData);
-            });
-    }
-
-
-    loadData() {
-        super.loadData(() => this.loadData2());
-        this.getReport();
-
-    }
-    constructor() {
-        super("reporte360Comite",
-            new KLauncherInfoClass("Reporte 360 comité", 0, "system", true, "360.png"));
-    }
-}
-
-new Reporte360Comite().register();
+ */

@@ -1369,6 +1369,7 @@ switch ($verb) {
     case "CARGAR_EVALUADORES_360_COMITE":
 
         $sql = "SELECT T.NOMBRES_APELLIDOS,
+        T.DEPARTAMENTO,
         sum(T.autoevaluacion) as autoevaluacion,
         sum(T.jefe) as jefe,
         sum(T.colaboradores) as colaboradores,
@@ -1379,7 +1380,7 @@ switch ($verb) {
         if(sum(T.autoevaluacion) > 0, 1, 0) + if(sum(T.jefe) > 0, 1, 0) + if(sum(T.colaboradores) > 0, 1, 0) + if(sum(T.pares) > 0, 1, 0)
         ) as promedio
         FROM (
-        SELECT ex1.NOMBRES_APELLIDOS,
+        SELECT ex1.NOMBRES_APELLIDOS, ex1.DEPARTAMENTO,
             ROUND(25 * AVG(ev.calificacion)) as autoevaluacion,
             0 as jefe,
             0 as colaboradores,
@@ -1394,7 +1395,7 @@ switch ($verb) {
             AND ex1.CEDULA = ex2.CEDULA -- autoevaluacion
         GROUP BY ex1.NOMBRES_APELLIDOS
         UNION
-        SELECT ex1.NOMBRES_APELLIDOS,
+        SELECT ex1.NOMBRES_APELLIDOS,ex1.DEPARTAMENTO,
             0 as autoevaluacion,
             ROUND(25 * AVG(ev.calificacion)) as jefe,
             0 as colaboradores,
@@ -1409,7 +1410,7 @@ switch ($verb) {
             AND ex1.CEDULA_LIDER = ex2.CEDULA -- JEFE
         GROUP BY ex1.NOMBRES_APELLIDOS
         UNION
-        SELECT ex1.NOMBRES_APELLIDOS,
+        SELECT ex1.NOMBRES_APELLIDOS,ex1.DEPARTAMENTO,
             0 as autoevaluacion,
             0 as jefe,
             ROUND(25 * AVG(ev.calificacion)) as colaboradores,
@@ -1424,7 +1425,7 @@ switch ($verb) {
             AND ex1.CEDULA = ex2.CEDULA_LIDER -- COLABORADORES
         GROUP BY ex1.NOMBRES_APELLIDOS
         UNION
-        SELECT ex1.NOMBRES_APELLIDOS,
+        SELECT ex1.NOMBRES_APELLIDOS,ex1.DEPARTAMENTO,
             0 as autoevaluacion,
             0 as jefe,
             0 as colaboradores,
@@ -1453,6 +1454,37 @@ switch ($verb) {
         $statement->execute();
         $result = $statement->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode($result);
+
+        break;
+
+
+    case "CARGAR_EVALUACIONES_COMITE_POR_COMPETENCIA":
+
+        $sql = "SELECT DISTINCT competencia FROM competencias360";
+        $statement = $database->prepare($sql);
+        $statement->execute();
+        $competencias = $statement->fetchAll(PDO::FETCH_ASSOC);
+       
+        foreach ($competencias as $competencia) {
+
+            $sql = "
+            SELECT ex.NOMBRES_APELLIDOS, 25 * avg(ev.calificacion)
+FROM 
+expediente ex INNER JOIN evaluaciones360 ev on ex.CEDULA = ev.idEvaluado
+
+WHERE ev.idPeriodo = 1
+and ex.COMITE = 1
+and ex.ACTIVO = 1
+and ev.calificacion > 0
+and ev.idItem in (SELECT id FROM competencias360 where COMPETENCIA = "Trabajo en Equipo")
+
+GROUP BY
+ex.NOMBRES_APELLIDOS
+            ";
+
+
+        }
+
 
         break;
 
