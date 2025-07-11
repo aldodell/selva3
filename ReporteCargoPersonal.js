@@ -104,6 +104,7 @@ class ReporteCargoPersonal extends ReporteSelva {
 
                 debugger;
 
+                console.log(data);
                 data = JSON.parse(data);
                 console.log(data);
                 this.tabla1.setArrayData(data);

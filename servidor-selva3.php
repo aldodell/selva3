@@ -933,7 +933,7 @@ switch ($verb) {
             AND ex1.CEDULA_LIDER <> ex2.CEDULA -- no es el jefe
             AND ex1.CEDULA <> ex2.CEDULA -- no es auto
             GROUP BY ex1.COMPANIA
-            ) as T
+            ) as t
             GROUP BY COMPANIA;
             ";
 
@@ -1199,6 +1199,7 @@ switch ($verb) {
         $statement->execute();
         $result = $statement->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode($result);
+        break;
 
 
     case "CARGAR_EVALUACION_POR_CARGO_POR_UNIDAD_DE_NEGOCIO":
@@ -1460,30 +1461,68 @@ switch ($verb) {
 
     case "CARGAR_EVALUACIONES_COMITE_POR_COMPETENCIA":
 
+        //Obtenemos las competencias
         $sql = "SELECT DISTINCT competencia FROM competencias360";
         $statement = $database->prepare($sql);
         $statement->execute();
         $competencias = $statement->fetchAll(PDO::FETCH_ASSOC);
-       
-        foreach ($competencias as $competencia) {
 
-            $sql = "
-            SELECT ex.NOMBRES_APELLIDOS, 25 * avg(ev.calificacion)
-FROM 
-expediente ex INNER JOIN evaluaciones360 ev on ex.CEDULA = ev.idEvaluado
+        //Obtenemos los trabajadores
+        $sql = "SELECT NOMBRES_APELLIDOS FROM expediente WHERE COMITE = 1 AND ACTIVO = 1 ORDER BY NOMBRES_APELLIDOS ASC";
+        $statement = $database->prepare($sql);
+        $statement->execute();
+        $trabajadores = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-WHERE ev.idPeriodo = 1
-and ex.COMITE = 1
-and ex.ACTIVO = 1
-and ev.calificacion > 0
-and ev.idItem in (SELECT id FROM competencias360 where COMPETENCIA = "Trabajo en Equipo")
+        //Filas
+        $rows = [];
 
-GROUP BY
-ex.NOMBRES_APELLIDOS
+
+
+        //Recorremos cada trabajador
+        foreach ($trabajadores as $trabajador) {
+            $row = [];
+            $row["NOMBRES_APELLIDOS"] = $trabajador["NOMBRES_APELLIDOS"];
+
+
+            //Procesamos cada competencia
+            foreach ($competencias as $competencia) {
+
+                $sql = "SELECT
+                ROUND(25 * avg(ev.calificacion)) as calificacion
+                FROM 
+                expediente ex INNER JOIN evaluaciones360 ev on ex.CEDULA = ev.idEvaluado
+
+                WHERE ev.idPeriodo = ?
+                AND ex.NOMBRES_APELLIDOS = ?
+                and ex.COMITE = 1
+                and ex.ACTIVO = 1
+                and ev.calificacion > 0
+                and ev.idItem in (SELECT id FROM competencias360 where COMPETENCIA = ?)
+
+                GROUP BY
+                ex.NOMBRES_APELLIDOS
             ";
 
+                $statement = $database->prepare($sql);
+                $statement->bindValue(1, $payload->idPeriodo);
+                $statement->bindValue(2, $trabajador["NOMBRES_APELLIDOS"]);
+                $statement->bindValue(3, $competencia["competencia"]);
+                $statement->execute();
+                $result = $statement->fetch(PDO::FETCH_ASSOC);
+                $row["calificaciones"][] = $result["calificacion"];
+
+
+            }
+
+            $rows[] = $row;
 
         }
+
+        $data = [];
+        $data["competencias"] = $competencias;
+        //$data["trabajadores"] = $trabajadores;
+        $data["calificaciones"] = $rows;
+        echo json_encode($data);
 
 
         break;
