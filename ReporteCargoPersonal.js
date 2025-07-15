@@ -140,7 +140,7 @@ class ReporteCargoPersonal extends ReporteSelva {
 
             let payload = {
                 "idPeriodo": this.selectorPeriodo.getValue(),
-                //"cargo": this.selectorCargo.getValue()
+                "idEvaluador": SelvaApplication.user.payload.CEDULA
             }
 
             KMessage("servidor", payload, "CARGAR_EVALUADOS_POR_CARGO_2", payload)

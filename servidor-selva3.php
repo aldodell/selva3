@@ -22,6 +22,19 @@ $verb = $message->verb;
 $payload = $message->payload;
 
 
+
+function obtenerNivelSeguridad($cedula)
+{
+    global $database;
+    $sql = "SELECT NIVEL_SEGURIDAD FROM expediente WHERE CEDULA = :CEDULA";
+    $statement = $database->prepare($sql);
+    $statement->bindParam(":CEDULA", $cedula);
+    $statement->execute();
+    $result = $statement->fetch(PDO::FETCH_ASSOC);
+    return $result["NIVEL_SEGURIDAD"];
+}
+
+
 switch ($verb) {
     case "ping":
         echo "pong";
@@ -616,8 +629,12 @@ switch ($verb) {
 
     //Carga los evaluados para competencias por cargo 
 //Revisa que los evaluados tengan al menos una evaluacion con calificacionz
+
     case "CARGAR_EVALUADOS_POR_CARGO_2":
-        $sql = "SELECT ex.CEDULA as value, ex.NOMBRES_APELLIDOS as label
+
+        $ns = obtenerNivelSeguridad($payload->idEvaluador);
+        if (($ns & 32) == 32) {
+            $sql = "SELECT ex.CEDULA as value, ex.NOMBRES_APELLIDOS as label
             FROM evaluacionesPorCargo ev
                 INNER JOIN expediente ex on ev.idEvaluado = ex.CEDULA
             WHERE ev.idPeriodo = ?
@@ -625,11 +642,32 @@ switch ($verb) {
             GROUP BY ex.CEDULA
             ORDER BY ex.NOMBRES_APELLIDOS
      ";
-        $statement = $database->prepare($sql);
-        $statement->bindValue(1, $payload->idPeriodo);
-        $statement->execute();
-        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode($result);
+            $statement = $database->prepare($sql);
+            $statement->bindValue(1, $payload->idPeriodo);
+            $statement->execute();
+            $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+            echo json_encode($result);
+
+
+        } else {
+            $sql = "SELECT ex.CEDULA as value, ex.NOMBRES_APELLIDOS as label
+            FROM evaluacionesPorCargo ev
+                INNER JOIN expediente ex on ev.idEvaluado = ex.CEDULA
+            WHERE ev.idPeriodo = ?
+                AND ev.calificacion > 0
+                and ev.idEvaluador = ?
+            GROUP BY ex.CEDULA
+            ORDER BY ex.NOMBRES_APELLIDOS
+     ";
+            $statement = $database->prepare($sql);
+            $statement->bindValue(1, $payload->idPeriodo);
+            $statement->bindValue(2, $payload->idEvaluador);
+            $statement->execute();
+            $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+            echo json_encode($result);
+        }
+
+
         break;
 
 
@@ -700,22 +738,50 @@ switch ($verb) {
     case "CARGAR_EVALUADOS_360_ASIGNADOS_A_UN_EVALUADOR":
         try {
 
+            $sql = "";
+            $ns = obtenerNivelSeguridad($payload->idEvaluador);
 
+            //Nivel de seguridad de administrador
+            if (($ns & 32) == 32) {
 
-            $sql = "SELECT asignaciones.idEvaluado as value, expediente.NOMBRES_APELLIDOS as label
+                $sql = "SELECT distinct asignaciones.idEvaluado as value, expediente.NOMBRES_APELLIDOS as label
+                FROM asignaciones INNER JOIN expediente
+                ON asignaciones.idEvaluado = expediente.CEDULA
+                WHERE
+                asignaciones.idPeriodo = ?
+                AND
+                asignaciones.idTipoEvaluacion = 1
+                     and expediente.ACTIVO=1
+                ORDER BY expediente.NOMBRES_APELLIDOS asc";
+
+                $statement = $database->prepare($sql);
+                $statement->bindValue(1, $payload->idPeriodo);
+                $statement->execute();
+                $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+            } else {
+                $sql = "SELECT asignaciones.idEvaluado as value, expediente.NOMBRES_APELLIDOS as label
                 FROM asignaciones INNER JOIN expediente
                 ON asignaciones.idEvaluado = expediente.CEDULA
                 WHERE
                 asignaciones.idPeriodo = ?
                 AND
                 asignaciones.idEvaluador = ?
+                and expediente.ACTIVO=1
                 AND
-                asignaciones.idTipoEvaluacion = 1";
-            $statement = $database->prepare($sql);
-            $statement->bindValue(1, $payload->idPeriodo);
-            $statement->bindValue(2, $payload->idEvaluador);
-            $statement->execute();
-            $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+                asignaciones.idTipoEvaluacion = 1
+                  ORDER BY expediente.NOMBRES_APELLIDOS asc
+                
+                ";
+
+                $statement = $database->prepare($sql);
+                $statement->bindValue(1, $payload->idPeriodo);
+                $statement->bindValue(2, $payload->idEvaluador);
+                $statement->execute();
+                $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+            }
+
+
+
 
 
 
@@ -1529,7 +1595,29 @@ switch ($verb) {
 
 
     case "CARGAR_TRABAJADORES_CON_EVALUACION_HABILIDADES_TECNICAS":
-        $sql = "SELECT
+
+        $ns = obtenerNivelSeguridad($payload->idEvaluador);
+        if (($ns & 32) == 32) {
+
+
+            $sql = "SELECT 
+                ex.NOMBRES_APELLIDOS as label,
+                ex.CEDULA as value
+                FROM expediente ex
+                INNER JOIN evaluacionesHabilidadesTecnicas ev ON ex.CEDULA = ev.idEvaluado
+                WHERE ev.idPeriodo = ?
+                and ev.calificacion > 0
+                GROUP BY ex.NOMBRES_APELLIDOS";
+
+            $statement = $database->prepare($sql);
+            $statement->bindValue(1, $payload->idPeriodo);
+
+            $statement->execute();
+            $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+            echo json_encode($result);
+        } else {
+
+            $sql = "SELECT
                 ex.NOMBRES_APELLIDOS as label,
                 ex.CEDULA as value
                 FROM expediente ex
@@ -1538,17 +1626,45 @@ switch ($verb) {
                 AND ev.idEvaluador = ?
                 GROUP BY ex.NOMBRES_APELLIDOS";
 
-        $statement = $database->prepare($sql);
-        $statement->bindValue(1, $payload->idPeriodo);
-        $statement->bindValue(2, $payload->idEvaluador);
-        $statement->execute();
-        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode($result);
+            $statement = $database->prepare($sql);
+            $statement->bindValue(1, $payload->idPeriodo);
+            $statement->bindValue(2, $payload->idEvaluador);
+            $statement->execute();
+            $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+            echo json_encode($result);
+
+        }
         break;
 
 
     case "CARGAR_CALIFICACIONES_HABILIDADES_TECNICAS":
-        $sql = "SELECT 25 * ev.calificacion as calificacion,
+
+
+        $ns = obtenerNivelSeguridad($payload->idEvaluador);
+        if (($ns & 32) == 32) {
+
+
+            $sql = "SELECT 25 * ev.calificacion as calificacion,
+                hab.habilidad
+                FROM habilidadesTecnicas hab
+                INNER JOIN evaluacionesHabilidadesTecnicas ev on hab.id = ev.idItem
+                WHERE ev.idPeriodo = ?
+                AND ev.idEvaluado = ?
+        ";
+
+            $statement = $database->prepare($sql);
+            $statement->bindValue(1, $payload->idPeriodo);
+            $statement->bindValue(2, $payload->idEvaluado);
+            $statement->execute();
+            $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+            echo json_encode($result);
+
+
+        } else {
+
+
+
+            $sql = "SELECT 25 * ev.calificacion as calificacion,
                 hab.habilidad
                 FROM habilidadesTecnicas hab
                 INNER JOIN evaluacionesHabilidadesTecnicas ev on hab.id = ev.idItem
@@ -1557,13 +1673,14 @@ switch ($verb) {
                 AND ev.idEvaluado = ?
         ";
 
-        $statement = $database->prepare($sql);
-        $statement->bindValue(1, $payload->idPeriodo);
-        $statement->bindValue(2, $payload->idEvaluador);
-        $statement->bindValue(3, $payload->idEvaluado);
-        $statement->execute();
-        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode($result);
+            $statement = $database->prepare($sql);
+            $statement->bindValue(1, $payload->idPeriodo);
+            $statement->bindValue(2, $payload->idEvaluador);
+            $statement->bindValue(3, $payload->idEvaluado);
+            $statement->execute();
+            $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+            echo json_encode($result);
+        }
         break;
 
     case "CARGAR_HABILIDADES_TECNICAS_POR_EMPRESA":
@@ -1756,13 +1873,13 @@ switch ($verb) {
         echo json_encode($result);
         break;
 
-        case "CARGAR_HABILIDADES_TECNICAS_PROMEDIO_TOTAL":
-            $sql = "SELECT round(25 * avg(ev.calificacion)) as calificacion FROM evaluacionesHabilidadesTecnicas ev WHERE ev.idPeriodo = ? AND ev.calificacion > 0 GROUP BY ev.idPeriodo";
-            $statement = $database->prepare($sql);
-            $statement->bindValue(1, $payload->idPeriodo);
-            $statement->execute();
-            $result = $statement->fetchAll(PDO::FETCH_ASSOC);
-            echo json_encode($result);
-            break;
+    case "CARGAR_HABILIDADES_TECNICAS_PROMEDIO_TOTAL":
+        $sql = "SELECT round(25 * avg(ev.calificacion)) as calificacion FROM evaluacionesHabilidadesTecnicas ev WHERE ev.idPeriodo = ? AND ev.calificacion > 0 GROUP BY ev.idPeriodo";
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
 
 }

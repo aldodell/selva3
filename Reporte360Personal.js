@@ -194,7 +194,7 @@ class Reporte360Personal extends ReporteSelva {
             idPeriodo: this.selectorPeriodo.getValue() ?? 1,
             idEvaluador: SelvaApplication.user.payload.CEDULA
         }
-
+debugger;
         KMessage("", payload, "CARGAR_EVALUADOS_360_ASIGNADOS_A_UN_EVALUADOR")
             .send(this.server)
             .then((data) => {
