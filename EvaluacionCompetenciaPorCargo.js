@@ -8,7 +8,7 @@ class EvaluacionCompetenciaPorCargo extends Evaluacion360 {
 
     constructor() {
         super("evaluacionCompetenciasPorCargo",
-            new KLauncherInfoClass("Competencias por cargo", 0, "system", true)
+            new KLauncherInfoClass("Competencias por cargo", 0, "system", true, "competencias.png")
         );
     }
 }

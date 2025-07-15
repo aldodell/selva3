@@ -1737,12 +1737,32 @@ switch ($verb) {
         $data["promedioUnidadNegocio"] = $promedioUnidadNegocio;
         $data["promedioDepartamento"] = $promedioDepartamento;
         echo json_encode($data);
-
-
-
-
         break;
 
+    case "CARGAR_HABILIDADES_TECNICAS_POR_UNIDAD_DE_NEGOCIO_PROMEDIOS":
+        $sql = "SELECT ex.UNIDAD_DE_NEGOCIO as unidadNegocio,
+             round(25 * avg(ev.calificacion)) as calificacion
+                FROM evaluacionesHabilidadesTecnicas ev
+                INNER JOIN expediente ex on ev.idEvaluado = ex.CEDULA
+                WHERE ev.idPeriodo = ?
+                AND ev.calificacion > 0
+                GROUP BY ex.UNIDAD_DE_NEGOCIO
+                ORDER BY  calificacion DESC, ex.UNIDAD_DE_NEGOCIO";
 
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
+
+        case "CARGAR_HABILIDADES_TECNICAS_PROMEDIO_TOTAL":
+            $sql = "SELECT round(25 * avg(ev.calificacion)) as calificacion FROM evaluacionesHabilidadesTecnicas ev WHERE ev.idPeriodo = ? AND ev.calificacion > 0 GROUP BY ev.idPeriodo";
+            $statement = $database->prepare($sql);
+            $statement->bindValue(1, $payload->idPeriodo);
+            $statement->execute();
+            $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+            echo json_encode($result);
+            break;
 
 }

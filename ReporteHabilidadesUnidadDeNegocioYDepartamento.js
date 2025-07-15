@@ -57,7 +57,14 @@ class ReporteHabilidadesUnidadDeNegocioYDepartamento extends ReporteSelva {
                         })
                 )
                     .applySimpleRoundedBorder()
-                    .addCssText("padding:8px; overflow:hidden;")
+                    .addCssText("padding:8px; overflow:hidden;"),
+                KRow(
+                    KImage("media/escala.png")
+                        .setSize(300, 129)
+
+                )
+                    .setSize(300, 129)
+                    .addCssText("margin-top: 8px;")
             )
 
 
@@ -140,7 +147,7 @@ class ReporteHabilidadesUnidadDeNegocioYDepartamento extends ReporteSelva {
 
     constructor() {
         super("reporteHabilidadesUnidadDeNegocioDepartamento",
-            new KLauncherInfoClass("Habilidades técnicas: Unidad de negocio/Departamento", 0, "system", true, "objetivos_reporte.png"));
+            new KLauncherInfoClass("Habilidades técnicas: U.N./Departamento", 0, "system", true, "habilidades_reporte.png"));
     }
 }
 

@@ -8,7 +8,7 @@ class EvaluacionHabilidadesTecnicas extends Evaluacion360 {
 
     constructor() {
         super("evaluacionHabilidadesTecnicas",
-            new KLauncherInfoClass("Habilidades técnicas", 0, "system", true)
+            new KLauncherInfoClass("Habilidades técnicas", 0, "system", true, "habilidades.png")
         );
     }
 }

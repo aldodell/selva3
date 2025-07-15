@@ -118,7 +118,7 @@ class ReporteHabilidadesPersonal extends ReporteSelva {
 
     constructor() {
         super("reporteHabilidadesPersonal",
-            new KLauncherInfoClass("Reporte de habilidades técnicas: Desempeño personal", 0, "system", true, "objetivos_reporte.png"));
+            new KLauncherInfoClass("Habilidades técnicas: Desempeño personal", 0, "system", true, "habilidades_reporte.png"));
     }
 }
 

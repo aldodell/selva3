@@ -214,7 +214,7 @@ class Reporte360Personal extends ReporteSelva {
         this.cargarEvaluados();
     }
 
-    constructor(name = "reporte360Personal", launcherInfoWrapper = new KLauncherInfoClass("Reporte 360 Personal", 0, "system", true, "360.png")) {
+    constructor(name = "reporte360Personal", launcherInfoWrapper = new KLauncherInfoClass("360 Personal", 0, "system", true, "360r.png")) {
         super(name, launcherInfoWrapper);
     }
 
