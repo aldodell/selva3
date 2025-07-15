@@ -94,7 +94,7 @@ switch ($verb) {
         break;
 
     case "CARGAR_UNIDADES_NEGOCIOS":
-        $sql = "SELECT DISTINCT UNIDAD_DE_NEGOCIO as label, UNIDAD_DE_NEGOCIO as value FROM expediente ORDER BY UNIDAD_DE_NEGOCIO ASC";
+        $sql = "SELECT DISTINCT UNIDAD_DE_NEGOCIO as label, UNIDAD_DE_NEGOCIO as value FROM expediente WHERE UNIDAD_DE_NEGOCIO IS NOT NULL ORDER BY UNIDAD_DE_NEGOCIO ASC";
         $statement = $database->prepare($sql);
         $statement->execute();
         $result = $statement->fetchAll(PDO::FETCH_ASSOC);
@@ -1528,6 +1528,220 @@ switch ($verb) {
         break;
 
 
+    case "CARGAR_TRABAJADORES_CON_EVALUACION_HABILIDADES_TECNICAS":
+        $sql = "SELECT
+                ex.NOMBRES_APELLIDOS as label,
+                ex.CEDULA as value
+                FROM expediente ex
+                INNER JOIN evaluacionesHabilidadesTecnicas ev ON ex.CEDULA = ev.idEvaluado
+                WHERE ev.idPeriodo = ?
+                AND ev.idEvaluador = ?
+                GROUP BY ex.NOMBRES_APELLIDOS";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->bindValue(2, $payload->idEvaluador);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
+
+
+    case "CARGAR_CALIFICACIONES_HABILIDADES_TECNICAS":
+        $sql = "SELECT 25 * ev.calificacion as calificacion,
+                hab.habilidad
+                FROM habilidadesTecnicas hab
+                INNER JOIN evaluacionesHabilidadesTecnicas ev on hab.id = ev.idItem
+                WHERE ev.idPeriodo = ?
+                AND ev.idEvaluador = ?
+                AND ev.idEvaluado = ?
+        ";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->bindValue(2, $payload->idEvaluador);
+        $statement->bindValue(3, $payload->idEvaluado);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
+
+    case "CARGAR_HABILIDADES_TECNICAS_POR_EMPRESA":
+        $sql = "SELECT ex.COMPANIA as empresa,
+            round(25 * avg(ev.calificacion)) as promedio
+            FROM expediente ex
+            INNER JOIN evaluacionesHabilidadesTecnicas ev ON ex.CEDULA = ev.idEvaluado
+            WHERE ev.idPeriodo = ?
+            AND ev.calificacion > 0
+            GROUP BY ex.COMPANIA
+            ORDER by promedio DESC;";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
+
+
+    case "CARGAR_PROMEDIO_HABILIDADES_TECNICAS_POR_EMPRESA_Y_HABILIDAD":
+
+        $sql = "SELECT distinct habilidad from habilidadesTecnicas";
+        $statement = $database->prepare($sql);
+        $statement->execute();
+        $habilidades = $statement->fetchAll(PDO::FETCH_COLUMN);
+
+
+        $sql = "SELECT distinct COMPANIA as empresa FROM expediente";
+        $statement = $database->prepare($sql);
+        $statement->execute();
+        $empresas = $statement->fetchAll(PDO::FETCH_COLUMN);
+
+        $rows = [];
+
+        foreach ($empresas as $empresa) {
+
+            $row = [];
+            for ($i = 0; $i < 4; $i++) {
+
+                $sql = "
+                SELECT ROUND(25 * AVG(ev.calificacion)) as promedio
+                FROM evaluacionesHabilidadesTecnicas ev
+                INNER JOIN expediente ex on ex.CEDULA = ev.idEvaluado
+                WHERE ev.idPeriodo = ?
+                AND ev.calificacion > 0
+                AND ev.idItem = ?
+                AND ex.COMPANIA = ?
+                GROUP BY ex.COMPANIA
+            ";
+
+                $statement = $database->prepare($sql);
+                $statement->bindValue(1, $payload->idPeriodo);
+                $statement->bindValue(2, $i + 1);
+                $statement->bindValue(3, $empresa);
+                $statement->execute();
+                $result = $statement->fetch(PDO::FETCH_ASSOC);
+                $row["empresa"] = $empresa;
+                $row["calificaciones"][] = $result["promedio"];
+            }
+            $rows[] = $row;
+
+        }
+
+        $data = [];
+        $data["habilidades"] = $habilidades;
+        $data["datos"] = $rows;
+
+        echo json_encode($data);
+
+
+        break;
+
+
+
+
+    case "CARGAR_HABILIDADES_TECNICAS_POR_UNIDAD_DE_NEGOCIO_DEPARTAMENTO_TRABAJADOR":
+
+        $sql = "SELECT ex.NOMBRES_APELLIDOS,
+                    round(25 * avg(ev.calificacion)) as calificacion
+                    FROM evaluacionesHabilidadesTecnicas ev
+                    INNER JOIN expediente ex on ev.idEvaluado = ex.CEDULA
+                    WHERE ev.idPeriodo = ?
+                    AND ev.calificacion > 0
+                    AND ex.UNIDAD_DE_NEGOCIO = ?
+                    AND ex.DEPARTAMENTO = ?
+                    GROUP BY ex.NOMBRES_APELLIDOS
+                    ORDER BY calificacion DESC, ex.NOMBRES_APELLIDOS;
+                    ";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->bindValue(2, $payload->unidadNegocio);
+        $statement->bindValue(3, $payload->departamento);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+
+        break;
+
+
+    case "CARGAR_UNIDADES_NEGOCIO_CON_HABILIDADES_TECNICAS":
+        $sql = "SELECT ex.UNIDAD_DE_NEGOCIO as label, ex.UNIDAD_DE_NEGOCIO as value
+                FROM expediente ex
+                    INNER JOIN evaluacionesHabilidadesTecnicas ev on ex.CEDULA = ev.idEvaluado
+                WHERE ev.idPeriodo = ?
+                    AND ev.calificacion > 0
+                GROUP BY ex.UNIDAD_DE_NEGOCIO";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
+
+    case "CARGAR_DEPARTAMENTOS_CON_HABILIDADES_TECNICAS":
+        $sql = "SELECT ex.DEPARTAMENTO as label,
+            ex.DEPARTAMENTO as value
+        FROM expediente ex INNER JOIN evaluacionesHabilidadesTecnicas ev on ex.CEDULA = ev.idEvaluado
+        WHERE ev.idPeriodo = ?
+            AND ev.calificacion > 0
+            AND ex.UNIDAD_DE_NEGOCIO = ?
+        GROUP BY ex.DEPARTAMENTO";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->bindValue(2, $payload->unidadNegocio);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+
+        break;
+
+
+    case "CARGAR_HABILIDADES_TECNICAS_PROMEDIOS":
+        $sql = "SELECT 
+                round(25 * avg(ev.calificacion)) as calificacion
+                FROM evaluacionesHabilidadesTecnicas ev
+                INNER JOIN expediente ex on ev.idEvaluado = ex.CEDULA
+                WHERE ev.idPeriodo = ?
+                AND ev.calificacion > 0
+                AND ex.UNIDAD_DE_NEGOCIO = ?
+                GROUP BY ex.UNIDAD_DE_NEGOCIO
+            ";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->bindValue(2, $payload->unidadNegocio);
+        $statement->execute();
+        $promedioUnidadNegocio = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        $sql = "SELECT 
+                round(25 * avg(ev.calificacion)) as calificacion
+                FROM evaluacionesHabilidadesTecnicas ev
+                INNER JOIN expediente ex on ev.idEvaluado = ex.CEDULA
+                WHERE ev.idPeriodo = ?
+                AND ev.calificacion > 0
+                AND ex.UNIDAD_DE_NEGOCIO = ?
+                AND ex.DEPARTAMENTO = ?
+                GROUP BY ex.DEPARTAMENTO";
+
+        $statement = $database->prepare($sql);
+        $statement->bindValue(1, $payload->idPeriodo);
+        $statement->bindValue(2, $payload->unidadNegocio);
+        $statement->bindValue(3, $payload->departamento);
+        $statement->execute();
+        $promedioDepartamento = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+        $data = [];
+        $data["promedioUnidadNegocio"] = $promedioUnidadNegocio;
+        $data["promedioDepartamento"] = $promedioDepartamento;
+        echo json_encode($data);
+
+
+
+
+        break;
 
 
 

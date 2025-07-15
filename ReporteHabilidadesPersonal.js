@@ -1,6 +1,6 @@
 class ReporteHabilidadesPersonal extends ReporteSelva {
 
-    tituloPrincipal = "DESEMPEÑO PERSONAL POR OBJETIVOS";
+    tituloPrincipal = "HABILIDADES TECNICAS";
     selectorEmpleado;
     objetivoLabel = [];
     ponderacionLabel = [];
@@ -31,11 +31,104 @@ class ReporteHabilidadesPersonal extends ReporteSelva {
 
                 ,
 
+                KRow(
+                    KVerticalBarGraph("HABILIDADES TECNICAS")
+                        .setSize(800, 400)
+                        .getMe(me => this.grafico1 = me)
+                        .addReferenceValues(0, 25, 50, 75, 100)
 
+                ).setSize(800, 400),
+                KRow(
+                    KImage("media/escala.png")
+                        .setSize(300, 129)
+                        .addCssText("margin-top: 8px;")
+                ).setSize(300, 129)
+            )
+
+    }
+
+
+    loadData3() {
+
+        let user = localStorage.getItem("user");
+        let idEvaluador = JSON.parse(user).payload.CEDULA;
+
+
+        let payload = {
+            "idPeriodo": this.selectorPeriodo.getValue(),
+            "idEvaluador": idEvaluador,
+            "idEvaluado": this.selectorTrabajador.getValue()
+        }
+
+        KMessage("servidor", payload, "CARGAR_CALIFICACIONES_HABILIDADES_TECNICAS", payload)
+            .send(this.server)
+            .then((data) => {
+                debugger;
+                let promedio = 0;
+                let sumaPonderaciones = 0;
+                data = JSON.parse(data);
+
+                this.grafico1.init();
+
+                for (let i = 0; i < data.length; i++) {
+                    let row = data[i];
+                    let calificacion = Math.round(row["calificacion"]);
+                    let habilidad = row["habilidad"];
+                    this.grafico1.addBar(calificacion, "", habilidad, this.getColorByValue(calificacion));
+                    promedio += calificacion;
+                }
+
+                this.grafico1.render();
+
+                promedio /= 4;
+                this.promedioLabel.setValue(promedio);
+            });
+
+
+
+    }
+
+    loadData2() {
+
+        let user = localStorage.getItem("user");
+        let idEvaluador = JSON.parse(user).payload.CEDULA;
+
+
+        let payload = {
+            "idPeriodo": this.selectorPeriodo.getValue(),
+            "idEvaluador": idEvaluador
+        }
+
+        KMessage("servidor", payload, "CARGAR_TRABAJADORES_CON_EVALUACION_HABILIDADES_TECNICAS", payload)
+            .send(this.server)
+            .then((data) => {
+                debugger;
+                data = JSON.parse(data);
+                let empleados = KDataList().clear().addOptions(data);
+                this.selectorTrabajador.clear().importDataList(empleados);
+                this.loadData3();
+            });
+
+
+    }
+
+    loadData() {
+        super.loadData(() => this.loadData2());
+    }
+
+    constructor() {
+        super("reporteHabilidadesPersonal",
+            new KLauncherInfoClass("Reporte de habilidades técnicas: Desempeño personal", 0, "system", true, "objetivos_reporte.png"));
+    }
+}
+
+new ReporteHabilidadesPersonal().register();
+
+/*
                 KColumn()
                     .getMe(
                         column => {
-                            for (let i = 1; i <= 4; i++) {
+                            for (let i = 0; i < 4; i++) {
 
 
                                 column.add(
@@ -85,79 +178,4 @@ class ReporteHabilidadesPersonal extends ReporteSelva {
                         }
                     )
 
-            )
-    }
-
-
-    loadData3() {
-
-        let user = localStorage.getItem("user");
-        let idEvaluador = JSON.parse(user).payload.CEDULA;
-
-        //CARGAR_TRABAJADORES_CON_EVALUACION_POR_OBJETIVOS
-        let payload = {
-            "idPeriodo": this.selectorPeriodo.getValue(),
-            "idEvaluador": idEvaluador,
-            "idEvaluado": this.selectorTrabajador.getValue()
-        }
-
-        KMessage("servidor", payload, "CARGAR_CALIFICACIONES_OBJETIVOS_POR_TRABAJADOR", payload)
-            .send(this.server)
-            .then((data) => {
-                let promedio = 0;
-                let sumaPonderaciones = 0;
-                data = JSON.parse(data)[0];
-
-                for (let i = 1; i <= 4; i++) {
-                    let calificacion = Math.round(data[`calificacion${i}`] * 25);
-                    let ponderacion = parseFloat(data[`ponderacion${i}`]);
-                    this.objetivoLabel[i].setValue(data[`objetivo${i}`]);
-                    this.ponderacionLabel[i].setValue("Ponderación: " + ponderacion);
-                    this.calificacionLabel[i].setValue("Calificación: " + calificacion);
-                    promedio += calificacion * ponderacion;
-                    this.ponderacionT[i].setSize(`${ponderacion}%`);
-                    this.ponderacionT[i].addCssText(`position: relative; left: ${sumaPonderaciones}%`);
-                    this.calificacionT[i].setSize(`${calificacion}%`);
-                    this.caption[i].setValue(`${calificacion}/${ponderacion}%`);
-                    sumaPonderaciones += ponderacion;
-                }
-                promedio /= 100;
-                this.promedioLabel.setValue(promedio);
-            });
-
-    }
-
-    loadData2() {
-
-        let user = localStorage.getItem("user");
-        let idEvaluador = JSON.parse(user).payload.CEDULA;
-
-        //CARGAR_TRABAJADORES_CON_EVALUACION_POR_OBJETIVOS
-        let payload = {
-            "idPeriodo": this.selectorPeriodo.getValue(),
-            "idEvaluador": idEvaluador
-        }
-
-        KMessage("servidor", payload, "CARGAR_TRABAJADORES_CON_EVALUACION_POR_OBJETIVOS", payload)
-            .send(this.server)
-            .then((data) => {
-                data = JSON.parse(data);
-                let empleados = KDataList().clear().addOptions(data);
-                this.selectorTrabajador.clear().importDataList(empleados);
-                this.loadData3();
-            });
-
-
-    }
-
-    loadData() {
-        super.loadData(() => this.loadData2());
-    }
-
-    constructor() {
-        super("reporteHabilidadesPersonal",
-            new KLauncherInfoClass("Reporte de habilidades técnicas: Desempeño personal", 0, "system", true, "objetivos_reporte.png"));
-    }
-}
-
-new ReporteHabilidadesPersonal().register();
+*/
