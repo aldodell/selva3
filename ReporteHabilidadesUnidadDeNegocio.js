@@ -80,7 +80,7 @@ class ReporteHabilidadesUnidadDeNegocio extends ReporteSelva {
 
     constructor() {
         super("reporteHabilidadesUnidadDeNegocio",
-            new KLauncherInfoClass("Habilidades técnicas: Unidad de Negocio", 0, "system", true, "habilidades_reporte.png"));
+            new KLauncherInfoClass("Habilidades técnicas: Unidad de Negocio", 0, "system", true, "habilidades_reporte.png", 32));
     }
 }
 

@@ -194,7 +194,7 @@ class Reporte360Personal extends ReporteSelva {
             idPeriodo: this.selectorPeriodo.getValue() ?? 1,
             idEvaluador: SelvaApplication.user.payload.CEDULA
         }
-debugger;
+        debugger;
         KMessage("", payload, "CARGAR_EVALUADOS_360_ASIGNADOS_A_UN_EVALUADOR")
             .send(this.server)
             .then((data) => {
@@ -214,7 +214,7 @@ debugger;
         this.cargarEvaluados();
     }
 
-    constructor(name = "reporte360Personal", launcherInfoWrapper = new KLauncherInfoClass("360 Personal", 0, "system", true, "360r.png")) {
+    constructor(name = "reporte360Personal", launcherInfoWrapper = new KLauncherInfoClass("360 Personal", 0, "system", true, "360r.png", 32)) {
         super(name, launcherInfoWrapper);
     }
 

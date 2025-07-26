@@ -10,7 +10,8 @@ class Entrada extends SelvaApplication {
         KMessage("servidor", payload, "VALIDAR_USUARIO")
             .send(this.server)
             .then(data => {
-               
+
+
                 //Parseamos la respuesta
                 data = JSON.parse(data);
 
@@ -21,8 +22,11 @@ class Entrada extends SelvaApplication {
 
                     //Sí pasó la validación
                     let user = KUser(data.EMAIL, data);
+                    user.securityLevel = data.NIVEL_SEGURIDAD;
                     SelvaApplication.user = user;
                     localStorage.setItem("user", JSON.stringify(user));
+                    KLauncher.setUser(user).update();
+
 
                 }
                 //Navega a la pantalla inicial
@@ -43,8 +47,8 @@ class Entrada extends SelvaApplication {
             KColumn(
                 KImage("media/grupo_selva_logo.png").addCssText("margin-bottom: 20px;"),
                 KColumn(
-                    KText("", "EMAIL").setSize(200).setPlaceholder("Email"),
-                    KPassword("", "PIN").setSize(200).setPlaceholder("Password"),
+                    KText("", "EMAIL").setSize(200).setPlaceholder("Email").getMe((me) => this.email = me),
+                    KPassword("", "PIN").setSize(200).setPlaceholder("Password").getMe((me) => this.pin = me),
                 ).getMe((me) => this.blockData = me)
                 ,
                 KButton("Ingresar", "ingresar").setSize(200).setMargin("10px")
@@ -69,7 +73,7 @@ class Entrada extends SelvaApplication {
 
         //Cargamos el usuario local
         let user = localStorage.getItem("user");
-        
+
         if (user) {
             user = JSON.parse(user);
             SelvaApplication.user = user;
@@ -77,10 +81,20 @@ class Entrada extends SelvaApplication {
         }
     }
 
+    run(message) {
+        debugger;
+        this.getInitScreen();
+        let email = message.payload.email ?? "";
+        let pin = message.payload.pin ?? "";
+        this.email.setValue(email);
+        this.pin.setValue(pin);
+        super.run();
+    }
+
 
     constructor() {
         super("entrada",
-            new KLauncherInfoClass("Entrada", 0, "system", true, "puerta.png"));
+            new KLauncherInfoClass("Entrada", 0, "system", true, "puerta.png", 0));
     }
 }
 new Entrada().register();

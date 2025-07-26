@@ -242,7 +242,7 @@ class Reporte360UnidadNegocio extends ReporteSelva {
     }
     constructor() {
         super("reporte360UnidadNegocio",
-            new KLauncherInfoClass("360 Unidad de Negocio", 0, "system", true,"360r.png"));
+            new KLauncherInfoClass("360 Unidad de Negocio", 0, "system", true, "360r.png", 32));
     }
 }
 

@@ -11,6 +11,13 @@
 
     <script defer src="/Kicsy2/KicsyLoader.js"></script>
     <script>
+
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const verb = urlParams.get('verb');
+        const email = urlParams.get('email');
+        const pin = urlParams.get('pin');
+
         const KICSY_MANIFEST = {
             "kicsyPath": "../Kicsy2/",
             "workingPath": "/selva3/",
@@ -43,57 +50,24 @@
                 "ReporteHabilidadesCompania.js",
                 "ReporteHabilidadesUnidadDeNegocio.js",
                 "ReporteHabilidadesUnidadDeNegocioYDepartamento.js",
-               
+
             ],
             postLoadCallback: () => {
                 KLauncher.setBodyCssText("background-color: white;");
                 KLauncher.setIconsCssText("background-color: white; opacity: 0.7;");
                 KLauncher.setBackCssText("background-color: rgb(255,255,255,0.8); background-image: url(media/talento_humano.png); background-repeat: no-repeat; background-blend-mode: lighten;");
-                //setBackCssText
-
                 KLauncher.pathIcons = "media/icons/";
                 KLauncher.update();
-                if (localStorage.getItem("user") == null) {
+                if (localStorage.getItem("user") == null || verb == "init") {
                     KMessage("launcher", {}, "close").send();
-                    KMessage("entrada", {}, "run").send();
+                    KMessage("entrada", { "email": email, "pin": pin }, "run").send();
                 }
             }
 
         }
 
 
-        /*
-        
-        
-      //  <script src="/Kicsy2/Kicsy2.js"></scr ipt>
-        
-                Kicsy.load(
-                    "SelvaApplication.js",
-                    "Entrada.js",
-                    "Expediente.js",
-                    "Ficha.js",
-                    "AdministrarCompetencias360.js",
-                    "AdministrarCompetenciasPorCargo.js",
-                    "AdministrarAsignaciones.js",
-                    "Evaluacion360.js",
-                    "EvaluacionCompetenciaPorCargo.js",
-                    "EvaluacionHabilidadesTecnicas.js",
-                    "EvaluacionPorObjetivos.js",
-                    "ReporteSelva.js",
-                    "Reporte360Personal.js",
-                    "Reporte360Companias.js",
-                    "Reporte360UnidadNegocio.js",
-        
-                ).then(() => {
-                    KLauncher.pathIcons = "../Kicsy2/media/icons/";
-                    KLauncher.update();
-                    if (localStorage.getItem("user") == null) {
-                        KMessage("launcher", {}, "close").send();
-                        KMessage("entrada", {}, "run").send();
-                    }
-                });
-        
-        */
+
 
 
     </script>

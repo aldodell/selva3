@@ -1,7 +1,7 @@
 class Reporte360Companias extends ReporteSelva {
 
     configured = false;
-     tituloPrincipal = "Desempeño 360 por empresas";
+    tituloPrincipal = "Desempeño 360 por empresas";
 
     configureReport() {
 
@@ -188,7 +188,7 @@ class Reporte360Companias extends ReporteSelva {
     }
     constructor() {
         super("reporte360Companias",
-            new KLauncherInfoClass("360 Empresas", 0, "system", true,"360r.png"));
+            new KLauncherInfoClass("360 Empresas", 0, "system", true, "360r.png", 32));
     }
 }
 

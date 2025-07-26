@@ -8,10 +8,10 @@ class ReporteCargoUnidadDeNegocio extends ReporteSelva {
             .add(
                 KRow(
                     KVerticalBarGraph("Unidades de negocio")
-                    .setTitle(
-                        KLabel("EVALUACION POR UNIDAD DE NEGOCIO")
-                        .addCssText("font-weight: bold;text-align: center;")
-                    )
+                        .setTitle(
+                            KLabel("EVALUACION POR UNIDAD DE NEGOCIO")
+                                .addCssText("font-weight: bold;text-align: center;")
+                        )
                         .addReferenceValues(60, 70, 80, 90, 100)
                         .setSize(800, 400)
                         .getMe(me => this.grafico1 = me)
@@ -58,7 +58,7 @@ class ReporteCargoUnidadDeNegocio extends ReporteSelva {
                 .send(this.server)
                 .then((data) => {
 
-                  
+
                     data = JSON.parse(data);
 
                     let i = 1;
@@ -83,7 +83,7 @@ class ReporteCargoUnidadDeNegocio extends ReporteSelva {
 
     constructor() {
         super("reporteCargoUnidadDeNegocio",
-            new KLauncherInfoClass("Competencias por cargo: Unidades de negocio", 0, "system", true, "competencias_reporte.png"));
+            new KLauncherInfoClass("Competencias por cargo: Unidades de negocio", 0, "system", true, "competencias_reporte.png", 32));
     }
 }
 

@@ -41,7 +41,7 @@ class Ficha extends SelvaApplication {
 
                 KRow(
                     KLabel("Cédula").setSize(200),
-                    KText("", "CEDULA").setSize(300)
+                    KText("", "CEDULA").setSize(300).getMe((me) => this.cedula = me)
                 ),
 
                 KRow(
@@ -93,11 +93,17 @@ class Ficha extends SelvaApplication {
 
                 KRow(
                     KLabel("Email").setSize(200),
-                    KText("", "EMAIL").setSize(300),
+                    KText("", "EMAIL").setSize(300).getMe((me) => this.email = me),
                 ),
                 KRow(
                     KLabel("PIN").setSize(200),
-                    KText("", "PIN").setSize(300),
+                    KText("", "PIN").setSize(300)
+                        .getMe(me => this.pin = me)
+                    ,
+                    KButton("Enviar PIN")
+                        .addEvent("click", () => {
+                            this.sendPin();
+                        })
                 ),
 
                 KRow(
@@ -118,6 +124,20 @@ class Ficha extends SelvaApplication {
 
         )
         return this.initScreen;
+    }
+
+
+    sendPin() {
+
+        debugger;
+        let payload = { "email": this.email.getValue(), "pin": this.pin.getValue(), "cedula": this.cedula.getValue() };
+
+        KMessage("", payload, "ENVIAR_PIN_UN_USUARIO")
+            .send(this.server)
+            .then(data => {
+                alert(data);
+            })
+
     }
 
 
@@ -217,7 +237,7 @@ class Ficha extends SelvaApplication {
 
     constructor() {
         super("ficha",
-            new KLauncherInfoClass("Ficha", 0, "system", true,"ficha.png")
+            new KLauncherInfoClass("Ficha", 0, "system", true, "ficha.png", 32)
         );
 
     }

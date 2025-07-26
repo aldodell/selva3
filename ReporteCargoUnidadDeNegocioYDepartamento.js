@@ -166,7 +166,7 @@ class ReporteCargoUnidadDeNegocioYDepartamento extends ReporteSelva {
 
     constructor() {
         super("reporteCargoUnidadDeNegocioYDepartamento",
-            new KLauncherInfoClass("Competencias por cargo: U.N. Departamentos", 0, "system", true, "competencias_reporte.png"));
+            new KLauncherInfoClass("Competencias por cargo: U.N. Departamentos", 0, "system", true, "competencias_reporte.png", 32));
     }
 }
 

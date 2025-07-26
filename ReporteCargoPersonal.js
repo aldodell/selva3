@@ -166,7 +166,7 @@ class ReporteCargoPersonal extends ReporteSelva {
 
     constructor() {
         super("reporteCargoPersonal",
-            new KLauncherInfoClass("Competencias por cargo: Desempeño personal", 0, "system", true, "competencias_reporte.png"));
+            new KLauncherInfoClass("Competencias por cargo: Desempeño personal", 0, "system", true, "competencias_reporte.png", 32));
     }
 }
 

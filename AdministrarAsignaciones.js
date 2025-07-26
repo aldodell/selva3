@@ -263,7 +263,8 @@ class AdministrarAsignaciones extends SelvaApplication {
 
     constructor() {
         super("administrarAsignaciones",
-            new KLauncherInfoClass("Administrar asignaciones", 0, "system", true, "adm_asignaciones.png"));
+            new KLauncherInfoClass("Administrar asignaciones", 0, "system", true, "adm_asignaciones.png", 32)
+        );
     }
 }
 

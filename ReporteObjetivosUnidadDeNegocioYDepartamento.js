@@ -166,7 +166,7 @@ class ReporteObjetivosUnidadDeNegocioYDepartamento extends ReporteSelva {
 
     constructor() {
         super("reporteObjetivosUnidadDeNegocioYDepartamento",
-            new KLauncherInfoClass("Objetivos: U.N. Departamentos", 0, "system", true, "objetivos_reporte.png"));
+            new KLauncherInfoClass("Objetivos: U.N. Departamentos", 0, "system", true, "objetivos_reporte.png", 32));
     }
 }
 

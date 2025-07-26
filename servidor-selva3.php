@@ -46,6 +46,50 @@ switch ($verb) {
      */
 
 
+    case "ENVIAR_PIN_UN_USUARIO":
+
+        $email = $payload->email;
+        $pin = $payload->pin;
+        $cedula = $payload->cedula;
+
+        $sql = "UPDATE expediente SET PIN = :PIN WHERE CEDULA = :CEDULA";
+        $statement = $database->prepare($sql);
+        $statement->bindParam(":PIN", $pin);
+        $statement->bindParam(":CEDULA", $cedula);
+        $statement->execute();
+
+        $to = $email;
+        $subject = "Talento humano Grupo Selva";
+
+        $message = "
+                <html>
+                <head>
+                <title>Grupo Selva</title>
+                </head>
+                <body>
+                <h1>Pin de acceso</h1>
+                <h2>Pin: $pin</h2>
+                <p>También puede ingresar a la plataforma <a href='https://www.gruposelvath.com/selva3/index.html?verb=init&email=$email&pin=$pin'>haciendo click aquí</a></p>
+                <img src='https://www.gruposelvath.com/selva2/media/talento_humano.png' style='max-width: 40%;height: auto;'>
+                </body>
+                </html>
+                ";
+
+        $message = wordwrap($message, 70);
+
+
+        $headers = "MIME-Version: 1.0" . "\r\n";
+        $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+        $headers .= "From: admin@gruposelvath.com" . "\r\n"; // Reemplazar con tu correo
+
+        if (mail($to, $subject, $message, $headers)) {
+            echo "Correo electrónico enviado con éxito.";
+        } else {
+            echo "Error al enviar el correo electrónico.";
+        }
+        break;
+
+
     case "VALIDAR_USUARIO":
         try {
             $sql = "SELECT NOMBRES_APELLIDOS, CEDULA, COMPANIA, EMAIL, UNIDAD_DE_NEGOCIO, NIVEL_SEGURIDAD FROM expediente WHERE email = :email AND pin  = :pin";

@@ -58,7 +58,7 @@ class ReporteCargoCompania extends ReporteSelva {
                 data.forEach(e => {
                     this.grafico1.addBar(e.calificacion, "", e.COMPANIA, this.getColorByValue(e.calificacion));
                 })
-                this.grafico1.render(); 
+                this.grafico1.render();
 
             });
 
@@ -73,7 +73,7 @@ class ReporteCargoCompania extends ReporteSelva {
 
     constructor() {
         super("reporteCargoCompanias",
-            new KLauncherInfoClass("Competencias por cargo: Empresas", 0, "system", true, "competencias_reporte.png"));
+            new KLauncherInfoClass("Competencias por cargo: Empresas", 0, "system", true, "competencias_reporte.png", 32));
     }
 }
 

@@ -207,7 +207,7 @@ class Reporte360Comite extends ReporteSelva {
     }
     constructor() {
         super("reporte360Comite",
-            new KLauncherInfoClass("360 Comité", 0, "system", true, "360r.png"));
+            new KLauncherInfoClass("360 Comité", 0, "system", true, "360r.png", 32));
     }
 }
 

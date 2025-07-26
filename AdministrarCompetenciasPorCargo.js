@@ -15,7 +15,7 @@ class AdministrarCompetenciasPorCargo extends SelvaApplication {
 
     eliminar(payload) {
         if (confirm("¿Desea eliminar la competencia?")) {
-            
+
             KMessage("servidor", payload, "ELIMINAR_COMPETENCIA_POR_CARGO")
                 .send(this.server)
                 .then((r) => {
@@ -135,7 +135,7 @@ class AdministrarCompetenciasPorCargo extends SelvaApplication {
 
     constructor() {
         super("administrarCompetenciasPorCargo",
-            new KLauncherInfoClass("Administrar competencias por cargo", 0, "system", true, "adm_competencias.png")
+            new KLauncherInfoClass("Administrar competencias por cargo", 0, "system", true, "adm_competencias.png", 32)
         );
     }
 }
