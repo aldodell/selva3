@@ -185,7 +185,7 @@ class Reporte360UnidadNegocio extends ReporteSelva {
         KMessage("servidor", payload, "CARGAR_EVALUACIONES_360_POR_UNIDAD_DE_NEGOCIO_Y_DEPARTAMENTOS_Y_COMPETENCIAS", payload)
             .send(this.server)
             .then((data) => {
-                debugger;
+                ;
                 console.log(data);
 
                 data = JSON.parse(data);

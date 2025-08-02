@@ -240,7 +240,7 @@ class EvaluacionPorObjetivos extends SelvaApplication {
 
                 this.evaluacion = JSON.parse(data);
                 if (this.evaluacion.length == 1) {
-                    debugger;
+                    ;
                     console.log("evaluacion", this.evaluacion);
                     //Solo el primer y unico registro
                     this.evaluacion = this.evaluacion[0];

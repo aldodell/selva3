@@ -49,15 +49,16 @@ switch ($verb) {
     case "ENVIAR_PIN_UN_USUARIO":
 
         $email = $payload->email;
-        $pin = $payload->pin;
         $cedula = $payload->cedula;
 
-        $sql = "UPDATE expediente SET PIN = :PIN WHERE CEDULA = :CEDULA";
-        $statement = $database->prepare($sql);
-        $statement->bindParam(":PIN", $pin);
-        $statement->bindParam(":CEDULA", $cedula);
-        $statement->execute();
 
+        $sql = "SELECT PIN from expediente WHERE cedula = ?";
+        $statement = $database->prepare($sql);
+        $statement->bindParam(1, $cedula);
+        $statement->execute();
+        $result = $statement->fetch(PDO::FETCH_ASSOC);
+
+        $pin = $result["PIN"];
         $to = $email;
         $subject = "Talento humano Grupo Selva";
 
@@ -87,6 +88,26 @@ switch ($verb) {
         } else {
             echo "Error al enviar el correo electrónico.";
         }
+        break;
+
+    case "CAMBIAR_PIN_UN_USUARIO":
+        $cedula = $payload->cedula;
+        $sql = "UPDATE expediente SET PIN = FLOOR(1000 + (RAND() * 9000)) WHERE CEDULA = ?;";
+        $statement = $database->prepare($sql);
+        $statement->bindParam(1, $cedula);
+        $statement->execute();
+        echo "OK";
+
+        break;
+
+    case "CAMBIAR_TODOS_LOS_PINES":
+
+        $sql = "UPDATE expediente SET PIN = FLOOR(1000 + (RAND() * 9000)) WHERE CEDULA = CEDULA;";
+        $statement = $database->prepare($sql);
+        $statement->execute();
+
+        echo "OK";
+
         break;
 
 
@@ -352,6 +373,15 @@ switch ($verb) {
     // Carga los nombres y apellidos como label y c'edula como value
     case "CARGAR_TRABAJADORES_2":
         $sql = "SELECT NOMBRES_APELLIDOS as label, CEDULA as value FROM expediente ORDER BY NOMBRES_APELLIDOS ASC";
+        $statement = $database->prepare($sql);
+        $statement->execute();
+        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result);
+        break;
+
+    case "CARGAR_TRABAJADORES_3":
+        $sql = "SELECT NOMBRES_APELLIDOS, EMAIL, CEDULA  FROM expediente 
+        where EMAIL != '' AND ACTIVO = 1 GROUP BY  EMAIL  ORDER BY NOMBRES_APELLIDOS ASC";
         $statement = $database->prepare($sql);
         $statement->execute();
         $result = $statement->fetchAll(PDO::FETCH_ASSOC);

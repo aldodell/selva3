@@ -5,7 +5,7 @@ class Reporte360Companias extends ReporteSelva {
 
     configureReport() {
 
-        debugger;
+        ;
         if (this.configured) return;
         this.configured = true;
 

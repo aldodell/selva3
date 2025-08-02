@@ -44,7 +44,7 @@ class ReporteHabilidadesUnidadDeNegocio extends ReporteSelva {
         KMessage("servidor", payload, "CARGAR_HABILIDADES_TECNICAS_POR_UNIDAD_DE_NEGOCIO_PROMEDIOS")
             .send(this.server)
             .then((data) => {
-                debugger;
+                ;
                 data = JSON.parse(data);
                 this.grafico1.init();
                 data.forEach(e => {
@@ -61,7 +61,7 @@ class ReporteHabilidadesUnidadDeNegocio extends ReporteSelva {
         KMessage("servidor", payload, "CARGAR_HABILIDADES_TECNICAS_PROMEDIO_TOTAL")
             .send(this.server)
             .then((data) => {
-                debugger;
+                ;
                 data = JSON.parse(data);
                 let promedioVenezuela = data[0].calificacion;
                 this.promedioVenezuelaLabel.setValue(`PROMEDIO VENEZUELA: ${promedioVenezuela}`);

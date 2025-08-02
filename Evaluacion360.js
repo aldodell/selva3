@@ -150,7 +150,7 @@ class Evaluacion360 extends SelvaApplication {
 
         this.initScreen.setData(this.competencias[this.indice]);
 
-        debugger;
+        ;
         //Limpiamos los bordes de los botones
         for (let i = 0; i < 4; i++) {
             this.botones[i].addCssText("box-shadow: none; border: 1px solid black;");
@@ -255,7 +255,7 @@ class Evaluacion360 extends SelvaApplication {
         KMessage("servidor", {}, "CARGAR_PERIODOS")
             .send(this.server)
             .then((data) => {
-                debugger;
+                ;
                 this.periodos.clear();
                 this.periodos.addOptions(JSON.parse(data));
                 this.selectorPeriodo.importDataList(this.periodos);

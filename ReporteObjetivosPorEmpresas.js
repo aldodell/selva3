@@ -37,7 +37,7 @@ class ReporteObjetivosPorEmpresas extends ReporteSelva {
     loadData2() {
 
 
-        debugger;
+        ;
         let payload = {
             "idPeriodo": this.selectorPeriodo.getValue(),
             //"cargo": this.selectorCargo.getValue()
@@ -47,7 +47,7 @@ class ReporteObjetivosPorEmpresas extends ReporteSelva {
             .send(this.server)
             .then((data) => {
 
-                debugger;
+                ;
 
                 data = JSON.parse(data);
 

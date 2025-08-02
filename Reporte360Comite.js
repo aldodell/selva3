@@ -145,7 +145,7 @@ class Reporte360Comite extends ReporteSelva {
 
                 data = JSON.parse(data);
 
-                debugger;
+                ;
 
                 this.tabla1.setArrayData(data);
 
@@ -173,7 +173,7 @@ class Reporte360Comite extends ReporteSelva {
         KMessage("servidor", payload, "CARGAR_EVALUACIONES_COMITE_POR_COMPETENCIA", payload)
             .send(this.server)
             .then((data) => {
-                debugger;
+                ;
                 data = JSON.parse(data);
                 let competencias = data.competencias;
                 let calificaciones = data.calificaciones;

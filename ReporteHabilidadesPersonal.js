@@ -63,7 +63,7 @@ class ReporteHabilidadesPersonal extends ReporteSelva {
         KMessage("servidor", payload, "CARGAR_CALIFICACIONES_HABILIDADES_TECNICAS", payload)
             .send(this.server)
             .then((data) => {
-                debugger;
+                ;
                 let promedio = 0;
                 let sumaPonderaciones = 0;
                 data = JSON.parse(data);
@@ -102,7 +102,7 @@ class ReporteHabilidadesPersonal extends ReporteSelva {
         KMessage("servidor", payload, "CARGAR_TRABAJADORES_CON_EVALUACION_HABILIDADES_TECNICAS", payload)
             .send(this.server)
             .then((data) => {
-                debugger;
+                ;
                 data = JSON.parse(data);
                 let empleados = KDataList().clear().addOptions(data);
                 this.selectorTrabajador.clear().importDataList(empleados);

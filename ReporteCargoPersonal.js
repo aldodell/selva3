@@ -102,7 +102,7 @@ class ReporteCargoPersonal extends ReporteSelva {
             .send(this.server)
             .then((data) => {
 
-                debugger;
+                ;
 
                 console.log(data);
                 data = JSON.parse(data);

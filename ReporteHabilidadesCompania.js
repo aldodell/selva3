@@ -23,7 +23,7 @@ class ReporteHabilidadesCompania extends ReporteSelva {
                     KDataView()
                         .getMe(me => this.encabezado1 = me)
                         .setCallbackBuilder((dv, row) => {
-                            debugger;
+                            ;
                             let krow = KRow()
                                 .addCssText("background-color: navy; color: white; font-weight: bold;")
                                 .addCssText("font-size: 0.8em; padding: 4px;");
@@ -87,7 +87,7 @@ class ReporteHabilidadesCompania extends ReporteSelva {
         KMessage("servidor", payload, "CARGAR_PROMEDIO_HABILIDADES_TECNICAS_POR_EMPRESA_Y_HABILIDAD", payload)
             .send(this.server)
             .then((data) => {
-                debugger;
+                ;
                 data = JSON.parse(data);
                 this.encabezado1.buildByData(data.habilidades);
                 this.tabla1.setArrayData(data.datos);

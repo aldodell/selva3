@@ -129,7 +129,7 @@ class Ficha extends SelvaApplication {
 
     sendPin() {
 
-        debugger;
+        ;
         let payload = { "email": this.email.getValue(), "pin": this.pin.getValue(), "cedula": this.cedula.getValue() };
 
         KMessage("", payload, "ENVIAR_PIN_UN_USUARIO")

@@ -82,7 +82,7 @@ class Entrada extends SelvaApplication {
     }
 
     run(message) {
-        debugger;
+        ;
         this.getInitScreen();
         let email = message.payload.email ?? "";
         let pin = message.payload.pin ?? "";
