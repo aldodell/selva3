@@ -218,7 +218,7 @@ class AdministrarAsignaciones extends SelvaApplication {
         KMessage("servidor", {}, "CARGAR_TRABAJADORES_2")
             .send(this.server)
             .then((data) => {
-                this.trabajadores.addOptions(JSON.parse(data));
+                this.trabajadores.clear().addOptions(JSON.parse(data));
                 steps.next();
             })
             .catch(err => {
@@ -229,7 +229,7 @@ class AdministrarAsignaciones extends SelvaApplication {
         KMessage("servidor", {}, "CARGAR_PERIODOS")
             .send(this.server)
             .then((data) => {
-                this.periodos.addOptions(JSON.parse(data));
+                this.periodos.clear().addOptions(JSON.parse(data));
                 steps.next();
             })
             .catch(err => {
@@ -240,7 +240,7 @@ class AdministrarAsignaciones extends SelvaApplication {
         KMessage("servidor", {}, "CARGAR_TIPOS_EVALUACION")
             .send(this.server)
             .then((data) => {
-                this.tiposEvaluacion.addOptions(JSON.parse(data));
+                this.tiposEvaluacion.clear().addOptions(JSON.parse(data));
                 steps.next();
             })
             .catch(err => {
