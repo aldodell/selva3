@@ -307,7 +307,7 @@ class EvaluacionPorObjetivos extends SelvaApplication {
 
     }
 
-    constructor(name = "evaluacionPorObjetivos", launcherInfoWrapper = new KLauncherInfoClass("Evaluación por objetivos", 0, "system", true,"objetivos.png")) {
+    constructor(name = "evaluacionPorObjetivos", launcherInfoWrapper = new KLauncherInfoClass("Evaluación por objetivos", 0, "system", true,"objetivos.png",32)) {
         super(name, launcherInfoWrapper);
 
     }
